@@ -1,0 +1,76 @@
+import os
+import traceback
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn
+from app.core.config import settings
+from app.core.logging import setup_logging
+from app.core.scheduler import init_scheduler
+
+setup_logging()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    os.makedirs(settings.REPORTS_DIR, exist_ok=True)
+    from app.setup_db import init_db
+    init_db()
+    init_scheduler()
+    yield
+
+
+app = FastAPI(
+    title="WealthWise API",
+    description="Personal Finance & Expense Tracking Application",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://financeos-ui.onrender.com",
+        os.getenv("FRONTEND_URL", ""),
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    import structlog
+    tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+    print(f"UNHANDLED ERROR [{request.method} {request.url.path}]: {tb}", flush=True)
+    logger = structlog.get_logger()
+    logger.error("Unhandled exception", path=request.url.path, method=request.method, error=str(exc))
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}", "code": "INTERNAL_ERROR"},
+    )
+
+
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(categories.router, prefix="/api/v1")
+app.include_router(expenses.router, prefix="/api/v1")
+app.include_router(income.router, prefix="/api/v1")
+app.include_router(credit_cards.router, prefix="/api/v1")
+app.include_router(debts.router, prefix="/api/v1")
+app.include_router(subscriptions.router, prefix="/api/v1")
+app.include_router(budgets.router, prefix="/api/v1")
+app.include_router(dashboard.router, prefix="/api/v1")
+app.include_router(reports.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(webauthn.router, prefix="/api/v1")
