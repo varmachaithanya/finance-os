@@ -40,7 +40,6 @@ services:
   - type: web
     name: financeos-ui
     runtime: static
-    region: singapore
     plan: free
     rootDir: finance-os-frontend
     buildCommand: npm install && npm run build
