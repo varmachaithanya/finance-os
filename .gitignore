@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+reports/
+*.db
+.pytest_cache/
+
+# Node
+node_modules/
+dist/
+.env.local
+.env.production.local
+.env.development.local
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic (keep migrations, ignore cache)
+migrations/__pycache__/

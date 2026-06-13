@@ -1,0 +1,8 @@
+#!/bin/bash
+echo "Adding all files..."
+git add .
+echo "Committing..."
+git commit -m "deploy: render deployment configuration"
+echo "Pushing to GitHub..."
+git push origin main
+echo "Done! Now go to render.com and click New > Blueprint"
