@@ -5,13 +5,18 @@ from alembic import context
 
 config = context.config
 
-# Override sqlalchemy.url with environment variable
-database_url = os.getenv("DATABASE_URL")
-if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
-
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+# Read DATABASE_URL from environment (Railway sets this)
+database_url = os.getenv("DATABASE_URL", "")
+
+# Railway uses postgres:// but SQLAlchemy needs postgresql://
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url)
 
 from app.models.base import Base
 target_metadata = Base.metadata
@@ -36,7 +41,10 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+        )
         with context.begin_transaction():
             context.run_migrations()
 

@@ -30,14 +30,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+allow_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://financeos-ui.up.railway.app",
+]
+
+frontend_url = os.getenv("FRONTEND_URL", "")
+if frontend_url and frontend_url not in allow_origins:
+    allow_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://financeos-ui.onrender.com",
-        os.getenv("FRONTEND_URL", ""),
-    ],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

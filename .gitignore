@@ -1,8 +1,12 @@
+# Environment files
+.env
+.env.local
+.env.production.local
+.env.development.local
+
 # Python
 __pycache__/
 *.py[cod]
-*.egg-info/
-.env
 venv/
 .venv/
 reports/
@@ -12,17 +16,9 @@ reports/
 # Node
 node_modules/
 dist/
-.env.local
-.env.production.local
-.env.development.local
 
-# VS Code
-.vscode/
-*.code-workspace
+# Railway (keep railway.json, ignore nothing extra)
 
 # OS
 .DS_Store
 Thumbs.db
-
-# Alembic (keep migrations, ignore cache)
-migrations/__pycache__/
