@@ -16,10 +16,14 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs(settings.REPORTS_DIR, exist_ok=True)
-    from app.setup_db import init_db
-    init_db()
-    init_scheduler()
+    try:
+        os.makedirs(settings.REPORTS_DIR, exist_ok=True)
+        from app.setup_db import init_db
+        init_db()
+        init_scheduler()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"Warning: Database initialization error: {e}")
     yield
 
 

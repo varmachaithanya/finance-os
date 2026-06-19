@@ -1,5 +1,3 @@
-import uuid
-
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
@@ -14,36 +12,52 @@ def init_db() -> None:
     seed_default_categories()
 
 
-def seed_default_categories() -> None:
-    with Session(engine) as db:
-        existing = db.execute(text("SELECT COUNT(*) FROM categories WHERE is_default = 1")).scalar()
+def seed_default_categories():
+    db = Session(engine)
+    try:
+        existing = db.execute(
+            text("SELECT COUNT(*) FROM categories WHERE is_default = TRUE")
+        ).scalar()
+
         if existing and existing > 0:
             return
 
-        expense_categories = [
-            ("Food", "expense", "restaurant", "#FF5722"),
-            ("Travel", "expense", "directions_car", "#2196F3"),
-            ("Fuel", "expense", "local_gas_station", "#FF9800"),
-            ("Shopping", "expense", "shopping_cart", "#E91E63"),
-            ("Medical", "expense", "local_hospital", "#4CAF50"),
-            ("Entertainment", "expense", "movie", "#9C27B0"),
-            ("Utilities", "expense", "bolt", "#607D8B"),
-            ("OTT Subscriptions", "expense", "tv", "#00BCD4"),
-            ("Mobile Recharge", "expense", "phone_android", "#3F51B5"),
-            ("Other Expense", "expense", "more_horiz", "#795548"),
+        default_categories = [
+            {"name": "Food", "type": "expense", "icon": "restaurant", "color": "#FF6B6B", "is_default": True},
+            {"name": "Travel", "type": "expense", "icon": "flight", "color": "#4ECDC4", "is_default": True},
+            {"name": "Fuel", "type": "expense", "icon": "local_gas_station", "color": "#45B7D1", "is_default": True},
+            {"name": "Shopping", "type": "expense", "icon": "shopping_bag", "color": "#96CEB4", "is_default": True},
+            {"name": "Medical", "type": "expense", "icon": "local_hospital", "color": "#FFEAA7", "is_default": True},
+            {"name": "Entertainment", "type": "expense", "icon": "movie", "color": "#DDA0DD", "is_default": True},
+            {"name": "Utilities", "type": "expense", "icon": "bolt", "color": "#98D8C8", "is_default": True},
+            {"name": "OTT Subscriptions", "type": "expense", "icon": "tv", "color": "#F7DC6F", "is_default": True},
+            {"name": "Mobile Recharge", "type": "expense", "icon": "phone_android", "color": "#BB8FCE", "is_default": True},
+            {"name": "Other", "type": "expense", "icon": "category", "color": "#AEB6BF", "is_default": True},
+            {"name": "Salary", "type": "income", "icon": "work", "color": "#2ECC71", "is_default": True},
+            {"name": "Freelancing", "type": "income", "icon": "laptop", "color": "#27AE60", "is_default": True},
+            {"name": "Business", "type": "income", "icon": "business", "color": "#1ABC9C", "is_default": True},
+            {"name": "Investment", "type": "income", "icon": "trending_up", "color": "#16A085", "is_default": True},
+            {"name": "Other", "type": "income", "icon": "attach_money", "color": "#AEB6BF", "is_default": True},
         ]
 
-        income_categories = [
-            ("Salary", "income", "work", "#4CAF50"),
-            ("Freelancing", "income", "laptop", "#2196F3"),
-            ("Business", "income", "store", "#FF9800"),
-            ("Investment", "income", "trending_up", "#9C27B0"),
-            ("Other Income", "income", "more_horiz", "#795548"),
-        ]
+        from app.models.category import Category
+        for cat_data in default_categories:
+            category = Category(
+                name=cat_data["name"],
+                type=cat_data["type"],
+                icon=cat_data["icon"],
+                color=cat_data["color"],
+                is_default=cat_data["is_default"],
+                user_id=None
+            )
+            db.add(category)
 
-        for name, typ, icon, color in expense_categories + income_categories:
-            from sqlalchemy import insert
-            from app.models.category import Category
-            cat = Category(name=name, type=typ, icon=icon, color=color, is_default=True)
-            db.add(cat)
         db.commit()
+        print("Default categories seeded successfully")
+
+    except Exception as e:
+        db.rollback()
+        print(f"Error seeding categories: {e}")
+        raise
+    finally:
+        db.close()
