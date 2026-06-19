@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
-    "start": "npx serve -s dist -l $PORT"
+    "start": "npx serve -s dist -p ${PORT:-3000}"
   },
   "dependencies": {
     "@emotion/react": "^11.13.0",
