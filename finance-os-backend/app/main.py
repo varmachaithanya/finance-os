@@ -37,7 +37,7 @@ app = FastAPI(
 allow_origins = [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://financeos-ui.up.railway.app",
+    "https://financeos-ui-production.up.railway.app",
 ]
 
 frontend_url = os.getenv("FRONTEND_URL", "")
