@@ -30,12 +30,16 @@ _FOOTER_HTML = """<tr><td style="padding-top:32px">
 </td></tr>"""
 
 
-def _build_message(recipient: str, subject: str, html: str, text: str) -> str:
+def _build_message(recipient: str, subject: str, html: str, text: str,
+                   from_addr: str = "", from_name: str = "") -> str:
+    f_addr = from_addr or settings.EMAIL_FROM or settings.SMTP_USER or "noreply@wealthwise.app"
+    f_name = from_name or settings.EMAIL_FROM_NAME or "WealthWise"
+    host = settings.SMTP_HOST or "localhost"
     msg = MIMEMultipart("alternative")
-    msg["From"] = formataddr((settings.EMAIL_FROM_NAME, settings.EMAIL_FROM))
+    msg["From"] = formataddr((f_name, f_addr))
     msg["To"] = recipient
     msg["Subject"] = subject
-    msg["Message-ID"] = f"<{uuid.uuid4().hex}@{settings.SMTP_HOST}>"
+    msg["Message-ID"] = f"<{uuid.uuid4().hex}@{host}>"
     msg["Date"] = formatdate(timeval=datetime.now(timezone.utc).timestamp(), localtime=False)
     msg["MIME-Version"] = "1.0"
     msg.attach(MIMEText(text, "plain"))
@@ -48,6 +52,11 @@ def send_email(recipient: str, subject: str, html_body: str, text_body: str = ""
     port = settings.SMTP_PORT
     user = settings.SMTP_USER
     password = settings.SMTP_PASSWORD
+    from_addr = settings.EMAIL_FROM or user
+    from_name = settings.EMAIL_FROM_NAME
+    if not host:
+        logger.warning("SMTP not configured — skipping email to %s: %s", recipient, subject)
+        return
     text = text_body or _strip_html(html_body)
     try:
         with smtplib.SMTP(host, port, timeout=15) as server:
@@ -57,9 +66,9 @@ def send_email(recipient: str, subject: str, html_body: str, text_body: str = ""
                 server.ehlo()
                 server.login(user, password)
             server.sendmail(
-                settings.EMAIL_FROM,
+                from_addr,
                 recipient,
-                _build_message(recipient, subject, html_body, text),
+                _build_message(recipient, subject, html_body, text, from_addr=from_addr, from_name=from_name),
             )
         logger.info("Email sent to %s via %s:%s: %s", recipient, host, port, subject)
     except Exception:

@@ -5,14 +5,25 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+from starlette.staticfiles import StaticFiles
 
 from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.scheduler import init_scheduler
 
+import structlog
 setup_logging()
+logger = structlog.get_logger()
+
+
+class SafeStaticFiles(StaticFiles):
+    def __init__(self, *args, **kwargs):
+        directory = kwargs.get("directory")
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+            logger.warning("created_missing_directory", path=str(directory))
+        super().__init__(*args, **kwargs)
 
 
 @asynccontextmanager
@@ -20,12 +31,13 @@ async def lifespan(app: FastAPI):
     try:
         os.makedirs(settings.REPORTS_DIR, exist_ok=True)
         os.makedirs(settings.AVATARS_DIR, exist_ok=True)
+        logger.info("directories_ready", avatars_dir=str(settings.AVATARS_DIR), reports_dir=str(settings.REPORTS_DIR))
         from app.setup_db import init_db
         init_db()
         init_scheduler()
-        print("Database initialized successfully")
+        logger.info("database_initialized")
     except Exception as e:
-        print(f"Warning: Database initialization error: {e}")
+        logger.warning("startup_warning", error=str(e))
     yield
 
 
@@ -62,10 +74,8 @@ def health():
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    import structlog
     tb = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
     print(f"UNHANDLED ERROR [{request.method} {request.url.path}]: {tb}", flush=True)
-    logger = structlog.get_logger()
     logger.error("Unhandled exception", path=request.url.path, method=request.method, error=str(exc))
     return JSONResponse(
         status_code=500,
@@ -73,7 +83,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
     )
 
 
-app.mount("/api/v1/avatars", StaticFiles(directory=settings.AVATARS_DIR), name="avatars")
+app.mount("/api/v1/avatars", SafeStaticFiles(directory=settings.AVATARS_DIR), name="avatars")
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(categories.router, prefix="/api/v1")

@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     WEBAUTHN_ORIGIN: str = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:5173")
     WEBAUTHN_RP_NAME: str = os.getenv("WEBAUTHN_RP_NAME", "WealthWise")
 
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = ""
+    EMAIL_FROM_NAME: str = "WealthWise"
+
     class Config:
         env_file = ".env"
         extra = "allow"
