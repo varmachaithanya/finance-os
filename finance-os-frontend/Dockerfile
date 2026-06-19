@@ -1,8 +1,16 @@
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --force
+
+# Copy package files
+COPY package.json ./
+
+# Install dependencies fresh without lock file
+RUN npm install --legacy-peer-deps
+
+# Copy source code
 COPY . .
+
+# Build
 RUN npm run build
 
 FROM node:20-alpine
