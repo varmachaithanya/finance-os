@@ -89,7 +89,14 @@ class WebAuthnService:
         if not challenge_record:
             raise HTTPException(status_code=400, detail="No registration challenge found")
 
-        cdj = json.loads(_b64url_decode(client_data_json).decode())
+        try:
+            cdj_bytes = _b64url_decode(client_data_json)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid client data JSON encoding: {e}")
+        try:
+            cdj = json.loads(cdj_bytes.decode())
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid client data JSON: {e}")
         if cdj.get("type") != "webauthn.create":
             raise HTTPException(status_code=400, detail="Invalid client data type")
         if cdj.get("challenge") != challenge_record.challenge:
@@ -97,8 +104,18 @@ class WebAuthnService:
         if cdj.get("origin") != settings.WEBAUTHN_ORIGIN:
             raise HTTPException(status_code=400, detail="Origin mismatch")
 
-        att_obj = _decode_cbor(_b64url_decode(attestation_object))
+        att_obj_bytes = _b64url_decode(attestation_object)
+        logger.debug(
+            "complete_registration: attestation_object length=%d, cdj length=%d",
+            len(att_obj_bytes), len(client_data_json),
+        )
+        att_obj = _decode_cbor(att_obj_bytes)
         auth_data = att_obj.get("authData", b"")
+        if not auth_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="authData missing from attestation object",
+            )
         public_key_bytes = _extract_public_key_from_auth_data(auth_data)
         if not public_key_bytes:
             raise HTTPException(status_code=400, detail="Could not extract public key from attestation")
@@ -270,22 +287,63 @@ class WebAuthnService:
 
 def _decode_cbor(data: bytes) -> dict:
     import cbor2
-    return cbor2.loads(data)
+    logger.debug("CBOR decode: data length=%d, hex[:50]=%s", len(data), data[:50].hex())
+    try:
+        return cbor2.loads(data)
+    except Exception as e:
+        logger.error("CBOR decode failure: %s, length=%d, data[:50]=%s", e, len(data), data[:50].hex())
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid attestation data: {e}",
+        )
 
 
 def _extract_public_key_from_auth_data(auth_data: bytes) -> Optional[str]:
+    logger.debug(
+        "extract_public_key: auth_data length=%d, hex[:50]=%s",
+        len(auth_data), auth_data[:50].hex(),
+    )
+
     if len(auth_data) < 37:
+        logger.warning("auth_data too short: %d bytes", len(auth_data))
         return None
 
     flags = auth_data[32]
     attested_credential_data = bool(flags & 0x40)
 
     if not attested_credential_data:
+        logger.warning("AT flag not set in auth_data flags=0x%02x", flags)
         return None
 
+    # Attested credential data layout (WebAuthn spec):
+    #   offset 37: AAGUID          – 16 bytes
+    #   offset 53: Credential ID L – 2 bytes (big-endian)
+    #   offset 55: Credential ID   – cred_id_len bytes
+    #   after that: COSE_Key       – CBOR-encoded
     offset = 37
+
+    if len(auth_data) < offset + 16:
+        logger.warning("auth_data too short for AAGUID: %d bytes", len(auth_data))
+        return None
+    logger.debug("AAGUID: %s", auth_data[offset:offset + 16].hex())
+    offset += 16
+
+    if len(auth_data) < offset + 2:
+        logger.warning("auth_data too short for cred_id_len: %d bytes", len(auth_data))
+        return None
     cred_id_len = int.from_bytes(auth_data[offset:offset + 2], "big")
     offset += 2
+
+    if len(auth_data) < offset + cred_id_len:
+        logger.warning(
+            "auth_data too short for credential ID: need %d, have %d",
+            offset + cred_id_len, len(auth_data),
+        )
+        return None
+    logger.debug(
+        "cred_id_len=%d, offset after cred_id=%d, remaining=%d",
+        cred_id_len, offset + cred_id_len, len(auth_data) - offset - cred_id_len,
+    )
     offset += cred_id_len
 
     cose_key = _decode_cbor(auth_data[offset:])

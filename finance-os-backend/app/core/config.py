@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = ""
     EMAIL_FROM_NAME: str = "WealthWise"
 
+    RESEND_API_KEY: str = ""
+
     class Config:
         env_file = ".env"
         extra = "allow"

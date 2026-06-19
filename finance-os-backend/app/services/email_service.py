@@ -1,10 +1,13 @@
 import logging
 import smtplib
+import socket
 import uuid
 from datetime import datetime, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr, formatdate
+
+import httpx
 
 from app.core.config import settings
 
@@ -47,21 +50,63 @@ def _build_message(recipient: str, subject: str, html: str, text: str,
     return msg.as_string()
 
 
-def send_email(recipient: str, subject: str, html_body: str, text_body: str = "") -> None:
+def _send_via_resend(recipient: str, subject: str, html_body: str, text_body: str) -> None:
+    from_addr = settings.EMAIL_FROM or "noreply@wealthwise.app"
+    from_name = settings.EMAIL_FROM_NAME or "WealthWise"
+    payload: dict = {
+        "from": f"{from_name} <{from_addr}>",
+        "to": [recipient],
+        "subject": subject,
+    }
+    if html_body:
+        payload["html"] = html_body
+    if text_body:
+        payload["text"] = text_body
+
+    logger.info(
+        "Sending email via Resend to %s: %s", recipient, subject,
+    )
+    try:
+        resp = httpx.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=30,
+        )
+        if resp.is_success:
+            logger.info("Email sent via Resend to %s: %s (id=%s)", recipient, subject, resp.json().get("id"))
+        else:
+            logger.error(
+                "Resend API error: status=%d, body=%s, recipient=%s, subject=%s",
+                resp.status_code, resp.text[:500], recipient, subject,
+            )
+    except httpx.TimeoutException:
+        logger.error("Resend API timeout for %s: %s", recipient, subject)
+    except httpx.RequestError as e:
+        logger.error("Resend API request failed for %s: %s — %s", recipient, subject, e)
+
+
+def _send_via_smtp(recipient: str, subject: str, html_body: str, text_body: str) -> None:
     host = settings.SMTP_HOST
     port = settings.SMTP_PORT
     user = settings.SMTP_USER
     password = settings.SMTP_PASSWORD
-    from_addr = settings.EMAIL_FROM or user
-    from_name = settings.EMAIL_FROM_NAME
-    if not host:
-        logger.warning("SMTP not configured — skipping email to %s: %s", recipient, subject)
-        return
+    from_addr = settings.EMAIL_FROM or user or "noreply@wealthwise.app"
+    from_name = settings.EMAIL_FROM_NAME or "WealthWise"
     text = text_body or _strip_html(html_body)
+
+    logger.info(
+        "Connecting to SMTP %s:%s to send email to %s: %s",
+        host, port, recipient, subject,
+    )
     try:
         with smtplib.SMTP(host, port, timeout=15) as server:
             server.ehlo()
             if user and password:
+                logger.debug("Starting TLS for %s:%s", host, port)
                 server.starttls()
                 server.ehlo()
                 server.login(user, password)
@@ -70,9 +115,23 @@ def send_email(recipient: str, subject: str, html_body: str, text_body: str = ""
                 recipient,
                 _build_message(recipient, subject, html_body, text, from_addr=from_addr, from_name=from_name),
             )
-        logger.info("Email sent to %s via %s:%s: %s", recipient, host, port, subject)
+        logger.info("Email sent to %s via SMTP %s:%s: %s", recipient, host, port, subject)
+    except (socket.gaierror, socket.timeout, OSError, smtplib.SMTPException) as e:
+        logger.error(
+            "SMTP connection failed for %s:%s to %s: %s",
+            host, port, recipient, e,
+        )
     except Exception:
-        logger.exception("Failed to send email to %s via %s:%s", recipient, host, port)
+        logger.exception("Unexpected SMTP error for %s:%s to %s", host, port, recipient)
+
+
+def send_email(recipient: str, subject: str, html_body: str, text_body: str = "") -> None:
+    if settings.RESEND_API_KEY:
+        _send_via_resend(recipient, subject, html_body, text_body)
+    elif settings.SMTP_HOST:
+        _send_via_smtp(recipient, subject, html_body, text_body)
+    else:
+        logger.warning("No email provider configured — skipping email to %s: %s", recipient, subject)
 
 
 def _strip_html(html: str) -> str:
