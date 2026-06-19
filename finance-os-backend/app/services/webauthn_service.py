@@ -116,9 +116,14 @@ class WebAuthnService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="authData missing from attestation object",
             )
-        public_key_bytes = _extract_public_key_from_auth_data(auth_data)
-        if not public_key_bytes:
+        public_key_str = _extract_public_key_from_auth_data(auth_data)
+        if not public_key_str:
             raise HTTPException(status_code=400, detail="Could not extract public key from attestation")
+
+        logger.debug(
+            "public_key type=%s, length=%d, preview=%s",
+            type(public_key_str).__name__, len(public_key_str), public_key_str[:80],
+        )
 
         self.db.delete(challenge_record)
 
@@ -133,7 +138,7 @@ class WebAuthnService:
         cred = WebAuthnCredential(
             user_id=user.id,
             credential_id=credential_id,
-            public_key=public_key_bytes.decode("ascii"),
+            public_key=public_key_str,
             device_name=device_name or "Biometric",
         )
         self.db.add(cred)

@@ -7,6 +7,7 @@ import AppLayout from './components/layout/AppLayout';
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/auth/ResetPassword'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
@@ -43,6 +44,7 @@ const App = () => {
         <Route path="/login" element={<LazyLoad><Login /></LazyLoad>} />
         <Route path="/register" element={<LazyLoad><Register /></LazyLoad>} />
         <Route path="/forgot-password" element={<LazyLoad><ForgotPassword /></LazyLoad>} />
+        <Route path="/reset-password" element={<LazyLoad><ResetPassword /></LazyLoad>} />
       </Route>
 
       <Route element={<ProtectedRoute />}>
