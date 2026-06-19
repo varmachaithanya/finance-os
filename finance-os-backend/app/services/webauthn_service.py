@@ -17,9 +17,9 @@ from app.repositories.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
 
-RP_ID = "localhost"
+RP_ID = "financeos-ui-production.up.railway.app"
 RP_NAME = "WealthWise"
-ORIGIN = settings.FRONTEND_URL or "http://localhost:5173"
+ORIGIN = "https://financeos-ui-production.up.railway.app"
 TIMEOUT_MS = 60000
 
 
