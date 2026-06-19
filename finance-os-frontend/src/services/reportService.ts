@@ -9,7 +9,7 @@ export interface ReportData {
     total_expenses: number;
     net_savings: number;
   };
-  expenses: Array<{ date: string; description?: string; amount: number; payment_method?: string }>;
+  expenses: Array<{ date: string; description?: string; amount: number; payment_method?: string; category?: string }>;
   income: Array<{ date: string; source: string; amount: number; description?: string }>;
   generated_at: string;
 }

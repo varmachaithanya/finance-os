@@ -93,9 +93,10 @@ class DashboardService:
         )
         expense_categories = [
             {
-                "category": str(r.category_id) if r.category_id else "Uncategorized",
+                "category": r.category_name if r.category_name else "Uncategorized",
                 "amount": r.total,
                 "count": r.count,
+                "color": r.category_color,
             }
             for r in expense_by_category
         ]

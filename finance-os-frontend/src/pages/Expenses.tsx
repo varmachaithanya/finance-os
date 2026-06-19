@@ -118,10 +118,14 @@ export default function Expenses() {
   const categories = (categoriesRaw as any)?.data ?? [];
 
   const rows: ExpenseRow[] = useMemo(() =>
-    (expensesData?.data ?? []).map((e) => ({
-      ...e,
-      payment_method: (e as unknown as Record<string, unknown>).payment_method as string ?? 'upi',
-    })), [expensesData]);
+    (expensesData?.data ?? []).map((e) => {
+      const cat = categories.find((c: { id: string }) => c.id === e.category_id);
+      return {
+        ...e,
+        payment_method: (e as unknown as Record<string, unknown>).payment_method as string ?? 'upi',
+        category: cat ? { id: cat.id, name: cat.name, color: cat.color, icon: cat.icon } : undefined,
+      };
+    }), [expensesData, categories]);
 
   const {
     register,

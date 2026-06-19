@@ -6,6 +6,7 @@ from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
 from app.models.expense import Expense
+from app.models.category import Category
 from app.repositories.base import BaseRepository, to_uuid
 
 
@@ -47,15 +48,18 @@ class ExpenseRepository(BaseRepository[Expense]):
         return (
             self.db.query(
                 Expense.category_id,
+                Category.name.label("category_name"),
+                Category.color.label("category_color"),
                 func.sum(Expense.amount).label("total"),
                 func.count(Expense.id).label("count"),
             )
+            .outerjoin(Category, Category.id == Expense.category_id)
             .filter(
                 Expense.user_id == to_uuid(user_id),
                 extract("month", Expense.expense_date) == month,
                 extract("year", Expense.expense_date) == year,
             )
-            .group_by(Expense.category_id)
+            .group_by(Expense.category_id, Category.name, Category.color)
             .all()
         )
 

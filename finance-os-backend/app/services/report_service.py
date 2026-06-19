@@ -84,6 +84,7 @@ class ReportService:
                     "description": e.description,
                     "amount": e.amount,
                     "payment_method": e.payment_method,
+                    "category": e.category.name if e.category else "Uncategorized",
                 }
                 for e in expenses
             ],

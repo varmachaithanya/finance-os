@@ -82,3 +82,4 @@ class UpdateProfileRequest(BaseModel):
     phone: Optional[str] = None
     currency: Optional[str] = None
     timezone: Optional[str] = None
+    avatar_url: Optional[str] = None

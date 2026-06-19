@@ -9,7 +9,12 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     DEFAULT_CURRENCY: str = "INR"
     REPORTS_DIR: str = "./reports"
+    AVATARS_DIR: str = "./avatars"
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "")
+
+    WEBAUTHN_RP_ID: str = os.getenv("WEBAUTHN_RP_ID", "localhost")
+    WEBAUTHN_ORIGIN: str = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:5173")
+    WEBAUTHN_RP_NAME: str = os.getenv("WEBAUTHN_RP_NAME", "WealthWise")
 
     class Config:
         env_file = ".env"

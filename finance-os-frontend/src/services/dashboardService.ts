@@ -13,7 +13,7 @@ export interface DashboardSummary {
 }
 
 export interface ChartData {
-  expense_by_category: Array<{ category: string; amount: number; count: number }>;
+  expense_by_category: Array<{ category: string; amount: number; count: number; color?: string }>;
   monthly_trend: Array<{ month: string; expenses: number; income: number }>;
   income_vs_expense: Array<{ month: string; income: number; expenses: number }>;
   debt_reduction: Array<{ month: string; total_debt: number }>;

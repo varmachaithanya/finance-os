@@ -17,9 +17,6 @@ from app.repositories.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
 
-RP_ID = "financeos-ui-production.up.railway.app"
-RP_NAME = "WealthWise"
-ORIGIN = "https://financeos-ui-production.up.railway.app"
 TIMEOUT_MS = 60000
 
 
@@ -52,7 +49,7 @@ class WebAuthnService:
 
         return {
             "challenge": challenge,
-            "rp": {"name": RP_NAME, "id": RP_ID},
+            "rp": {"name": settings.WEBAUTHN_RP_NAME, "id": settings.WEBAUTHN_RP_ID},
             "user": {
                 "id": _b64url(str(user.id).encode()),
                 "name": user.email,
@@ -97,7 +94,7 @@ class WebAuthnService:
             raise HTTPException(status_code=400, detail="Invalid client data type")
         if cdj.get("challenge") != challenge_record.challenge:
             raise HTTPException(status_code=400, detail="Challenge mismatch")
-        if cdj.get("origin") != ORIGIN:
+        if cdj.get("origin") != settings.WEBAUTHN_ORIGIN:
             raise HTTPException(status_code=400, detail="Origin mismatch")
 
         att_obj = _decode_cbor(_b64url_decode(attestation_object))
@@ -146,7 +143,7 @@ class WebAuthnService:
 
         return {
             "challenge": challenge,
-            "rp_id": RP_ID,
+            "rp_id": settings.WEBAUTHN_RP_ID,
             "allowCredentials": [
                 {
                     "type": "public-key",
@@ -187,7 +184,7 @@ class WebAuthnService:
             raise HTTPException(status_code=400, detail="Invalid client data type")
         if cdj.get("challenge") != challenge_record.challenge:
             raise HTTPException(status_code=400, detail="Challenge mismatch")
-        if cdj.get("origin") != ORIGIN:
+        if cdj.get("origin") != settings.WEBAUTHN_ORIGIN:
             raise HTTPException(status_code=400, detail="Origin mismatch")
 
         self.db.delete(challenge_record)

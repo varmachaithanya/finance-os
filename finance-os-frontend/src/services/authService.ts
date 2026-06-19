@@ -63,3 +63,13 @@ export const changePassword = (data: ChangePasswordRequest) => api.post('/auth/c
 export const forgotPassword = (email: string) => api.post<{ message: string }>('/auth/forgot-password', { email }).then(r => r.data);
 
 export const resetPassword = (data: { token: string; new_password: string }) => api.post('/auth/reset-password', data).then(r => r.data);
+
+export const uploadAvatar = (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/auth/me/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data);
+};
+
+export const deleteAvatar = () => api.delete('/auth/me/avatar').then(r => r.data);

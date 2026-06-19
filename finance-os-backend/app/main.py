@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn
 from app.core.config import settings
@@ -18,6 +19,7 @@ setup_logging()
 async def lifespan(app: FastAPI):
     try:
         os.makedirs(settings.REPORTS_DIR, exist_ok=True)
+        os.makedirs(settings.AVATARS_DIR, exist_ok=True)
         from app.setup_db import init_db
         init_db()
         init_scheduler()
@@ -70,6 +72,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         content={"detail": f"Internal server error: {str(exc)}", "code": "INTERNAL_ERROR"},
     )
 
+
+app.mount("/api/v1/avatars", StaticFiles(directory=settings.AVATARS_DIR), name="avatars")
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(categories.router, prefix="/api/v1")

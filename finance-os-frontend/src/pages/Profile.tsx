@@ -1,16 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
-  Box, Paper, Typography, TextField, Button, MenuItem,
+  Avatar, Box, Paper, Typography, TextField, Button, MenuItem,
   Snackbar, Alert, CircularProgress, Grid, IconButton,
 } from '@mui/material';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import PageHeader from '@/components/common/PageHeader';
-import { updateMe, changePassword } from '@/services/authService';
+import { updateMe, changePassword, uploadAvatar, deleteAvatar } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import { supportsWebAuthn, decodeServerOptions, createCredential } from '@/utils/webauthn';
 import { webauthnService } from '@/services/webauthnService';
@@ -56,6 +57,11 @@ export default function Profile() {
   const [bioCreds, setBioCreds] = useState<WebAuthnCred[]>([]);
   const [bioLoading, setBioLoading] = useState(false);
   const [bioEnrolling, setBioEnrolling] = useState(false);
+  const [bioError, setBioError] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarSnackbar, setAvatarSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -113,9 +119,41 @@ export default function Profile() {
     }
   }, []);
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarUploading(true);
+    uploadAvatar(file)
+      .then((updatedUser) => {
+        updateUser(updatedUser);
+        setAvatarSnackbar({ open: true, message: 'Avatar updated successfully', severity: 'success' });
+        setAvatarPreview(null);
+      })
+      .catch(() => {
+        setAvatarPreview(null);
+        setAvatarSnackbar({ open: true, message: 'Failed to upload avatar', severity: 'error' });
+      })
+      .finally(() => setAvatarUploading(false));
+  };
+
+  const handleAvatarDelete = async () => {
+    setAvatarUploading(true);
+    try {
+      const updatedUser = await deleteAvatar();
+      updateUser(updatedUser);
+      setAvatarSnackbar({ open: true, message: 'Avatar removed', severity: 'success' });
+    } catch {
+      setAvatarSnackbar({ open: true, message: 'Failed to delete avatar', severity: 'error' });
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const handleBioEnroll = useCallback(async () => {
     if (!supportsWebAuthn()) return;
     setBioEnrolling(true);
+    setBioError('');
     try {
       const opts = await webauthnService.registerBegin();
       const decoded = decodeServerOptions(opts);
@@ -125,8 +163,10 @@ export default function Profile() {
         const updated = await webauthnService.listCredentials();
         setBioCreds(updated);
       }
-    } catch {
-      // user cancelled or error
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } }; message?: string };
+      const msg = e?.response?.data?.detail || e?.message || 'Biometric enrollment failed';
+      setBioError(msg);
     } finally {
       setBioEnrolling(false);
     }
@@ -196,11 +236,60 @@ export default function Profile() {
           </Paper>
         </Grid>
         <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" fontWeight={600} mb={3}>Profile Picture</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Avatar
+                src={avatarPreview || (user?.avatar_url ? `${import.meta.env.VITE_API_BASE_URL || '/api/v1'}${user.avatar_url}` : undefined)}
+                sx={{ width: 100, height: 100, bgcolor: 'primary.main', fontSize: 36 }}
+              >
+                {user?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
+              </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                style={{ display: 'none' }}
+                onChange={handleAvatarChange}
+              />
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={avatarUploading ? <CircularProgress size={14} color="inherit" /> : <PhotoCameraIcon />}
+                  disabled={avatarUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                  sx={{ borderRadius: '10px', textTransform: 'none' }}
+                >
+                  {avatarUploading ? 'Uploading...' : 'Upload'}
+                </Button>
+                {user?.avatar_url && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    disabled={avatarUploading}
+                    onClick={handleAvatarDelete}
+                    sx={{ borderRadius: '10px', textTransform: 'none' }}
+                  >
+                    Remove
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight={600} mb={3}>
                 <FingerprintIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#00C9A7' }} />
                 Biometric Authentication
               </Typography>
+              {bioError && (
+                <Alert severity="error" sx={{ mb: 2, backgroundColor: '#E24B4A15', color: '#E24B4A', border: '1px solid #E24B4A30', borderRadius: '10px' }}>
+                  {bioError}
+                </Alert>
+              )}
               {bioCreds.length > 0 ? (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
                   {bioCreds.map((cred) => (
@@ -254,6 +343,12 @@ export default function Profile() {
       <Snackbar open={passwordSnackbar} autoHideDuration={4000} onClose={() => setPasswordSnackbar(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="success" onClose={() => setPasswordSnackbar(false)}>Password changed successfully</Alert>
+      </Snackbar>
+      <Snackbar open={avatarSnackbar.open} autoHideDuration={4000} onClose={() => setAvatarSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert severity={avatarSnackbar.severity} onClose={() => setAvatarSnackbar((s) => ({ ...s, open: false }))}>
+          {avatarSnackbar.message}
+        </Alert>
       </Snackbar>
     </Box>
   );

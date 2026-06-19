@@ -87,7 +87,7 @@ export default function Dashboard() {
   const expensePieData = (c.expense_by_category ?? []).map(e => ({
     name: e.category,
     value: Number(e.amount),
-    color: '#1976d2',
+    color: e.color ?? '#1976d2',
   }));
 
   const monthlyTrendData = (c.monthly_trend ?? []).map(e => ({ month: e.month, amount: Number(e.expenses) }));

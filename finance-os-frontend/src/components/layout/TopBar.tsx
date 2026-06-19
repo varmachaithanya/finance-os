@@ -122,7 +122,10 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
             {theme === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
           </IconButton>
           <IconButton onClick={handleMenuOpen} sx={{ p: 0.5 }}>
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+            <Avatar
+              src={user?.avatar_url ? `${import.meta.env.VITE_API_BASE_URL || '/api/v1'}${user.avatar_url}` : undefined}
+              sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}
+            >
               {initials}
             </Avatar>
           </IconButton>

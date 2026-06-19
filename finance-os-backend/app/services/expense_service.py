@@ -81,7 +81,7 @@ class ExpenseService:
         items = self.repo.get_summary_by_category(user_id, month, year)
         total = sum((item.total for item in items), Decimal("0"))
         return {
-            "data": [{"category_id": str(r.category_id) if r.category_id else None, "total": r.total, "count": r.count} for r in items],
+            "data": [{"category_id": str(r.category_id) if r.category_id else None, "category_name": r.category_name, "total": r.total, "count": r.count} for r in items],
             "total_amount": total,
             "month": month,
             "year": year,

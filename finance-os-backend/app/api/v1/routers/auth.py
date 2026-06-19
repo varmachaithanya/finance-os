@@ -1,8 +1,12 @@
+import os
+import shutil
 import traceback
-from fastapi import APIRouter, Depends, HTTPException
+import uuid
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.core.config import settings
 from app.models.user import User
 from app.schemas.auth import (
     ChangePasswordRequest,
@@ -16,6 +20,9 @@ from app.schemas.auth import (
     UserResponse,
 )
 from app.services.auth_service import AuthService
+
+ALLOWED_AVATAR_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -87,6 +94,52 @@ def update_me(
     service = AuthService(db)
     kwargs = body.model_dump(exclude_none=True)
     user = service.update_profile(str(current_user.id), **kwargs)
+    return UserResponse.model_validate(user)
+
+
+@router.post("/me/avatar", summary="Upload profile avatar")
+def upload_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    if file.content_type not in ALLOWED_AVATAR_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type. Allowed: JPEG, PNG, GIF, WebP")
+
+    contents = file.file.read()
+    if len(contents) > MAX_AVATAR_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+    file.file.seek(0)
+
+    os.makedirs(settings.AVATARS_DIR, exist_ok=True)
+
+    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "png"
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(settings.AVATARS_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    avatar_url = f"/avatars/{filename}"
+
+    service = AuthService(db)
+    user = service.update_profile(str(current_user.id), avatar_url=avatar_url)
+    return UserResponse.model_validate(user)
+
+
+@router.delete("/me/avatar", summary="Delete profile avatar")
+def delete_avatar(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    service = AuthService(db)
+    old_url = current_user.avatar_url
+    if old_url:
+        filename = old_url.rsplit("/", 1)[-1]
+        filepath = os.path.join(settings.AVATARS_DIR, filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+    user = service.update_profile(str(current_user.id), avatar_url=None)
     return UserResponse.model_validate(user)
 
 
