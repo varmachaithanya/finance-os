@@ -64,6 +64,7 @@ export const useStore = create<AuthState & ThemeState & StoreActions>((set) => (
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('welcome_shown');
     set({ user: null, accessToken: null, refreshToken: null, isAuthenticated: false });
   },
 

@@ -104,7 +104,7 @@ export default function Dashboard() {
     color: e.color ?? '#1976d2',
   }));
 
-  const monthlyTrendData = (c.monthly_trend ?? []).map(e => ({ month: e.month, amount: Number(e.expenses) }));
+  const monthlyTrendData = (c.monthly_trend ?? []).map(e => ({ month: e.month, expenses: Number(e.expenses) }));
 
   const incomeVsExpenseData = (c.income_vs_expense ?? []).map(e => ({
     month: e.month, income: Number(e.income), expenses: Number(e.expenses),
@@ -125,27 +125,27 @@ export default function Dashboard() {
       </Grid>
 
       <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} md={6}>
-          <ExpensePieChart data={expensePieData} />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Box sx={{ width: '100%' }}><ExpensePieChart data={expensePieData} /></Box>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <MonthlyTrendChart data={monthlyTrendData} />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Box sx={{ width: '100%' }}><MonthlyTrendChart data={monthlyTrendData} /></Box>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <IncomeVsExpenseChart data={incomeVsExpenseData} />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Box sx={{ width: '100%' }}><IncomeVsExpenseChart data={incomeVsExpenseData} /></Box>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <DebtProgressChart data={debtProgressData} />
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Box sx={{ width: '100%' }}><DebtProgressChart data={debtProgressData} /></Box>
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper>
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Paper sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="h6" fontWeight={600}>Upcoming Due Payments</Typography>
             </Box>
-            <TableContainer>
+            <TableContainer sx={{ flex: 1 }}>
               <Table>
                 <TableHead>
                   <TableRow>
@@ -180,12 +180,12 @@ export default function Dashboard() {
             </TableContainer>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={6}>
-          <Paper>
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Paper sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
             <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
               <Typography variant="h6" fontWeight={600}>Upcoming Renewals</Typography>
             </Box>
-            <TableContainer>
+            <TableContainer sx={{ flex: 1 }}>
               <Table>
                 <TableHead>
                   <TableRow>
