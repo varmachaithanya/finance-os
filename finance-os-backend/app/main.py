@@ -10,7 +10,7 @@ from starlette.staticfiles import StaticFiles
 from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.core.scheduler import init_scheduler
+from app.core.scheduler import init_scheduler, shutdown_scheduler
 
 import structlog
 setup_logging()
@@ -39,6 +39,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning("startup_warning", error=str(e))
     yield
+    shutdown_scheduler()
 
 
 app = FastAPI(

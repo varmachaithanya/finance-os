@@ -1,98 +1,112 @@
 import React from 'react';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  RadialBarChart, RadialBar, ResponsiveContainer,
+  PolarAngleAxis,
 } from 'recharts';
-import { Box, Typography } from '@mui/material';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-
-interface DebtData {
-  month: string;
-  total_debt: number;
-}
+import { Box, Typography, useTheme } from '@mui/material';
 
 interface DebtProgressChartProps {
-  data: DebtData[];
+  data: any[];
+  debts?: any[];
 }
 
-const formatCurrency = (value: number): string => {
-  return '\u20B9' + value.toLocaleString('en-IN');
-};
+const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts }) => {
+  const theme = useTheme();
+  const totalDebt = debts?.reduce((sum: number, d: any) =>
+    sum + parseFloat(d.total_amount || 0), 0) || 0;
+  const totalPaid = debts?.reduce((sum: number, d: any) =>
+    sum + parseFloat(d.paid_amount || 0), 0) || 0;
+  const paidPct = totalDebt > 0
+    ? Math.round((totalPaid / totalDebt) * 100) : 0;
 
-const CustomTooltip: React.FC<{
-  active?: boolean;
-  payload?: { value: number }[];
-  label?: string;
-}> = ({ active, payload, label }) => {
-  if (!active || !payload || payload.length === 0) return null;
-  return (
-    <Box
-      sx={{
-        backgroundColor: 'background.paper',
-        p: 1.5,
+  const radialData = [{ name: 'Paid', value: paidPct, fill: '#00C9A7' }];
+
+  const isEmpty = !data || data.length === 0;
+
+  if (isEmpty && !debts) {
+    return (
+      <Box sx={(theme) => ({
+        background: theme.palette.background.paper,
+        borderRadius: '16px',
         border: 1,
         borderColor: 'divider',
-        borderRadius: 1,
-        boxShadow: 1,
-      }}
-    >
-      <Typography variant="body2" fontWeight={600}>
-        {label}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {formatCurrency(payload[0].value)}
-      </Typography>
-    </Box>
-  );
-};
-
-const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data }) => {
-  const isEmpty = !data || data.length === 0;
-  if (isEmpty) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, minHeight: 350 }}>
-        <TrendingDownIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          No debt progress data to display
+        padding: '20px',
+        height: 280,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 1,
+      })}>
+        <Typography fontSize={15} fontWeight={600}
+          color="text.primary" mb={2} alignSelf="flex-start">
+          {'\u{1F3AF}'} Debt Payoff Progress
         </Typography>
-        <Typography variant="body2" color="text.disabled">
-          Add debts to track your reduction progress
+        <Typography fontSize={32}>{'\u{1F4CA}'}</Typography>
+        <Typography fontSize={13} color="text.secondary">
+          No data yet
+        </Typography>
+        <Typography fontSize={11} color="text.secondary">
+          Add debts to see progress
         </Typography>
       </Box>
     );
   }
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <AreaChart
-        data={data}
-        margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
-      >
-        <defs>
-          <linearGradient id="debtGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#d32f2f" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="#d32f2f" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-        <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-        <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => formatCurrency(v)} />
-        <Tooltip content={<CustomTooltip />} />
-        <Area
-          type="monotone"
-          dataKey="total_debt"
-          stroke="#d32f2f"
-          strokeWidth={2}
-          fill="url(#debtGradient)"
-          dot={{ r: 4, fill: '#d32f2f' }}
-          activeDot={{ r: 6 }}
-        />
-      </AreaChart>
-    </ResponsiveContainer>
+    <Box sx={{
+      backgroundColor: 'background.paper',
+      borderRadius: '16px',
+      border: 1,
+      borderColor: 'divider',
+      padding: '20px',
+    }}>
+      <Typography fontSize={15} fontWeight={600}
+        color="text.primary" mb={2}>
+        {'\u{1F3AF}'} Debt Payoff Progress
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Box sx={{ width: 140, height: 140, flexShrink: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadialBarChart
+              innerRadius="70%" outerRadius="100%"
+              data={radialData} startAngle={90} endAngle={-270}>
+              <PolarAngleAxis type="number" domain={[0, 100]} tick={false}/>
+              <RadialBar dataKey="value" cornerRadius={10}
+                background={{ fill: theme.palette.divider }}/>
+            </RadialBarChart>
+          </ResponsiveContainer>
+          <Typography textAlign="center" fontSize={20}
+            fontWeight={700} color="#00C9A7" mt={-8}>
+            {paidPct}%
+          </Typography>
+          <Typography textAlign="center" fontSize={11}
+            color="text.secondary" mt={7}>
+            paid off
+          </Typography>
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ mb: 2 }}>
+            <Typography fontSize={11} color="text.secondary">Total Debt</Typography>
+            <Typography fontSize={16} fontWeight={600} color="#E24B4A">
+              {'\u20B9'}{totalDebt.toLocaleString('en-IN')}
+            </Typography>
+          </Box>
+          <Box sx={{ mb: 2 }}>
+            <Typography fontSize={11} color="text.secondary">Total Paid</Typography>
+            <Typography fontSize={16} fontWeight={600} color="#00C9A7">
+              {'\u20B9'}{totalPaid.toLocaleString('en-IN')}
+            </Typography>
+          </Box>
+          <Box>
+            <Typography fontSize={11} color="text.secondary">Remaining</Typography>
+            <Typography fontSize={16} fontWeight={600} color="text.primary">
+              {'\u20B9'}{(totalDebt - totalPaid).toLocaleString('en-IN')}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

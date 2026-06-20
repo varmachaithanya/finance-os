@@ -106,58 +106,88 @@ const Reports = () => {
 
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 3, flexWrap: 'wrap' }}>
         {period === 'monthly' && (
-          <TextField
-            label="Month"
-            type="month"
-            size="small"
-            value={dayjs().year(year).month(month - 1).format('YYYY-MM')}
-            onChange={(e) => { const d = dayjs(e.target.value); setMonth(d.month() + 1); setYear(d.year()); }}
-            InputLabelProps={{ shrink: true }}
-            sx={{ width: 200 }}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Month"
+              type="month"
+              size="small"
+              value={dayjs().year(year).month(month - 1).format('YYYY-MM')}
+              onChange={(e) => { const d = dayjs(e.target.value); setMonth(d.month() + 1); setYear(d.year()); }}
+              InputLabelProps={{ shrink: true }}
+              sx={{ width: 200 }}
+            />
+          </Box>
         )}
         {period === 'yearly' && (
-          <TextField
-            label="Year"
-            type="number"
-            size="small"
-            value={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-            inputProps={{ min: 2020, max: 2100 }}
-            sx={{ width: 120 }}
-          />
-        )}
-        {period === 'weekly' && (
-          <>
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
             <TextField
               label="Year"
               type="number"
               size="small"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              sx={{ width: 100 }}
-            />
-            <TextField
-              label="Week Number"
-              type="number"
-              size="small"
-              value={week}
-              onChange={(e) => setWeek(Number(e.target.value))}
-              inputProps={{ min: 1, max: 53 }}
+              inputProps={{ min: 2020, max: 2100 }}
               sx={{ width: 120 }}
             />
+          </Box>
+        )}
+        {period === 'weekly' && (
+          <>
+            <Box sx={{
+              '& .MuiTextField-root': { width: '100%' },
+              '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+              '& input': { padding: '10px 12px', fontSize: '13px' },
+            }}>
+              <TextField
+                label="Year"
+                type="number"
+                size="small"
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                sx={{ width: 100 }}
+              />
+            </Box>
+            <Box sx={{
+              '& .MuiTextField-root': { width: '100%' },
+              '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+              '& input': { padding: '10px 12px', fontSize: '13px' },
+            }}>
+              <TextField
+                label="Week Number"
+                type="number"
+                size="small"
+                value={week}
+                onChange={(e) => setWeek(Number(e.target.value))}
+                inputProps={{ min: 1, max: 53 }}
+                sx={{ width: 120 }}
+              />
+            </Box>
           </>
         )}
         {period === 'daily' && (
-          <TextField
-            label="Date"
-            type="date"
-            size="small"
-            value={day}
-            onChange={(e) => setDay(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            sx={{ width: 200 }}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Date"
+              type="date"
+              size="small"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              sx={{ width: 200 }}
+            />
+          </Box>
         )}
 
         <Button variant="contained" onClick={handleGenerate} disabled={generateMut.isPending}>

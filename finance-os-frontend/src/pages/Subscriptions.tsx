@@ -23,6 +23,7 @@ import PageHeader from '@/components/common/PageHeader';
 import DataTable, { type Column } from '@/components/common/DataTable';
 import StatCard from '@/components/common/StatCard';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
+import { SubscriptionLogo } from '@/utils/logos';
 import {
   subscriptionService,
   type Subscription,
@@ -105,8 +106,8 @@ const Subscriptions = () => {
     queryFn: () => subscriptionService.getUpcoming(30),
   });
 
-  const subscriptions = (subscriptionsRaw as any)?.data ?? [];
-  const upcoming = (upcomingRaw as any)?.data ?? [];
+  const subscriptions = Array.isArray(subscriptionsRaw) ? subscriptionsRaw : (subscriptionsRaw as any)?.data ?? [];
+  const upcoming = Array.isArray(upcomingRaw) ? upcomingRaw : (upcomingRaw as any)?.data ?? [];
 
   const mapFormToApi = (data: FormValues) => ({
     service_name: data.name,
@@ -175,7 +176,17 @@ const Subscriptions = () => {
   const daysRemaining = (date: string) => dayjs(date).diff(dayjs(), 'day');
 
   const columns: Column<Subscription>[] = [
-    { id: 'service_name', label: 'Service Name', sortable: true },
+    {
+      id: 'service_name',
+      label: 'Service Name',
+      sortable: true,
+      render: (row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <SubscriptionLogo service={row.service_name} />
+          <Typography fontSize={14}>{row.service_name}</Typography>
+        </Box>
+      ),
+    },
     {
       id: 'category',
       label: 'Category',
@@ -249,7 +260,16 @@ const Subscriptions = () => {
   ];
 
   const upcomingColumns: Column<UpcomingRenewalItem>[] = [
-    { id: 'service_name', label: 'Service' },
+    {
+      id: 'service_name',
+      label: 'Service',
+      render: (row) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <SubscriptionLogo service={row.service_name} />
+          <Typography fontSize={14}>{row.service_name}</Typography>
+        </Box>
+      ),
+    },
     { id: 'amount', label: 'Amount', render: (row) => INR(row.amount) },
     { id: 'renewal_date', label: 'Renewal Date', render: (row) => dayjs(row.renewal_date).format('DD MMM YYYY') },
     {
@@ -398,7 +418,12 @@ const Subscriptions = () => {
             )} />
 
             <Controller name="nextBillingDate" control={control} render={({ field }) => (
-              <TextField {...field} label="Renewal Date" type="date" InputLabelProps={{ shrink: true }} error={!!errors.nextBillingDate} helperText={errors.nextBillingDate?.message} fullWidth />
+              <Box sx={{
+                '& .MuiTextField-root': { width: '100%' },
+                '& input': { padding: '10px 12px', fontSize: '13px' },
+              }}>
+                <TextField {...field} label="Renewal Date" type="date" InputLabelProps={{ shrink: true }} error={!!errors.nextBillingDate} helperText={errors.nextBillingDate?.message} fullWidth />
+              </Box>
             )} />
 
             <Controller name="autoRenewal" control={control} render={({ field }) => (

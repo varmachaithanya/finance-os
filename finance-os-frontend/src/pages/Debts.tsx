@@ -52,6 +52,17 @@ import { debtService, type Debt } from '@/services/debtService';
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 
+const formatAmount = (value: any): string => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return '0';
+  return num.toLocaleString('en-IN');
+};
+
+const safeNumber = (value: any): number => {
+  const num = parseFloat(value);
+  return isNaN(num) ? 0 : num;
+};
+
 const debtSchema = z.object({
   name: z.string().min(1, 'Lender name is required'),
   category: z.string().min(1, 'Debt type is required'),
@@ -87,9 +98,9 @@ const STATUS_OPTIONS = [
   { value: 'overdue', label: 'Overdue' },
 ];
 
-function getDebtStatus(debt: Debt): 'paid' | 'active' | 'overdue' {
-  if (debt.remainingAmount <= 0) return 'paid';
-  if (dayjs(debt.dueDate).isBefore(dayjs(), 'day')) return 'overdue';
+function getDebtStatus(debt: any): 'paid' | 'active' | 'overdue' {
+  if (safeNumber(debt.remaining_amount) <= 0) return 'paid';
+  if (dayjs(debt.due_date).isBefore(dayjs(), 'day')) return 'overdue';
   return 'active';
 }
 
@@ -99,7 +110,8 @@ const statusConfig: Record<string, { color: 'success' | 'warning' | 'error'; lab
   overdue: { color: 'error', label: 'Overdue' },
 };
 
-function getDaysRemaining(dueDate: string): number {
+function getDaysRemaining(dueDate: string | undefined): number {
+  if (!dueDate) return 0;
   return dayjs(dueDate).diff(dayjs(), 'day');
 }
 
@@ -112,17 +124,20 @@ interface PayoffPlanItem {
 }
 
 function computePayoffPlan(debts: Debt[], strategy: 'snowball' | 'avalanche'): PayoffPlanItem[] {
-  const active = debts.filter((d) => d.remainingAmount > 0);
+  const active = debts.filter((d) => safeNumber(d.remaining_amount) > 0);
   const sorted = [...active].sort((a, b) => {
-    if (strategy === 'avalanche') return b.interestRate - a.interestRate;
-    return a.remainingAmount - b.remainingAmount;
+    if (strategy === 'avalanche') return safeNumber(b.interest_rate) - safeNumber(a.interest_rate);
+    return safeNumber(a.remaining_amount) - safeNumber(b.remaining_amount);
   });
 
   return sorted.map((d) => {
-    const monthly = d.minimumPayment > 0 ? d.minimumPayment : d.remainingAmount * 0.02;
-    const monthlyRate = d.interestRate / 100 / 12;
+    const remaining = safeNumber(d.remaining_amount);
+    const interestRate = safeNumber(d.interest_rate);
+    const emi = safeNumber(d.emi_amount);
+    const monthly = emi > 0 ? emi : remaining * 0.02;
+    const monthlyRate = interestRate / 100 / 12;
     let months = 0;
-    let balance = d.remainingAmount;
+    let balance = remaining;
     if (monthlyRate > 0 && monthly > balance * monthlyRate) {
       months = Math.ceil(Math.log(monthly / (monthly - balance * monthlyRate)) / Math.log(1 + monthlyRate));
     } else if (monthlyRate <= 0 && monthly > 0) {
@@ -131,9 +146,9 @@ function computePayoffPlan(debts: Debt[], strategy: 'snowball' | 'avalanche'): P
       months = 999;
     }
     return {
-      name: d.name,
-      remaining: d.remainingAmount,
-      interestRate: d.interestRate,
+      name: d.lender_name,
+      remaining,
+      interestRate,
       estimatedMonths: months,
       monthlyPayment: monthly,
     };
@@ -226,7 +241,7 @@ export default function Debts() {
   const isPending = createMutation.isPending || updateMutation.isPending;
   const isPaymentPending = recordPaymentMutation.isPending;
 
-  const debtList = (debts as any)?.data ?? [];
+  const debtList = Array.isArray(debts) ? debts : (debts as any)?.data ?? [];
 
   const filteredDebts = useMemo(
     () =>
@@ -242,9 +257,9 @@ export default function Debts() {
   );
 
   const summary = useMemo(() => {
-    const totalOwed = debtList.reduce((s, d) => s + d.remainingAmount, 0);
-    const totalPaid = debtList.reduce((s, d) => s + d.paidAmount, 0);
-    const activeDebts = debtList.filter((d) => d.remainingAmount > 0).length;
+    const totalOwed = debtList.reduce((s: number, d: any) => s + safeNumber(d.total_amount || d.remaining_amount), 0);
+    const totalPaid = debtList.reduce((s: number, d: any) => s + safeNumber(d.paid_amount), 0);
+    const activeDebts = debtList.filter((d: any) => safeNumber(d.remaining_amount) > 0).length;
     return { totalOwed, totalPaid, activeDebts, total: debtList.length };
   }, [debtList]);
 
@@ -300,13 +315,13 @@ export default function Debts() {
 
   const onRecordPayment = (data: PaymentFormData) => {
     if (!paymentTarget) return;
-    const newPaid = paymentTarget.paidAmount + data.amount;
+    const newPaid = safeNumber(paymentTarget.paid_amount) + data.amount;
     recordPaymentMutation.mutate({ id: paymentTarget.id, paidAmount: newPaid });
   };
 
   const openPaymentModal = (debt: Debt) => {
     setPaymentTarget(debt);
-    const maxPayment = debt.remainingAmount;
+    const maxPayment = safeNumber(debt.remaining_amount);
     paymentForm.reset({ amount: 0 });
   };
 
@@ -427,10 +442,12 @@ export default function Debts() {
         </Box>
       ) : (
         <Grid container spacing={2} mb={4}>
-          {filteredDebts.map((debt) => {
+          {filteredDebts.map((debt: any) => {
+            const totalAmt = safeNumber(debt.total_amount);
+            const paidAmt = safeNumber(debt.paid_amount);
             const status = getDebtStatus(debt);
-            const progress = debt.totalAmount > 0 ? (debt.paidAmount / debt.totalAmount) * 100 : 0;
-            const daysRemaining = getDaysRemaining(debt.dueDate);
+            const progress = totalAmt > 0 ? (paidAmt / totalAmt) * 100 : 0;
+            const daysRemaining = getDaysRemaining(debt.due_date);
             const sc = statusConfig[status];
             return (
               <Grid item xs={12} key={debt.id}>
@@ -439,10 +456,10 @@ export default function Debts() {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                       <Box>
                         <Typography variant="h6" fontWeight={600}>
-                          {debt.name}
+                          {debt.lender_name}
                         </Typography>
-                        {debt.category && (
-                          <Chip label={debt.category.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())} size="small" variant="outlined" sx={{ mt: 0.5 }} />
+                        {debt.debt_type && (
+                          <Chip label={debt.debt_type.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())} size="small" variant="outlined" sx={{ mt: 0.5 }} />
                         )}
                       </Box>
                       <Chip label={sc.label} size="small" color={sc.color} />
@@ -451,7 +468,7 @@ export default function Debts() {
                     <Box sx={{ mb: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {formatCurrency(debt.paidAmount)} paid of {formatCurrency(debt.totalAmount)} total
+                          {'\u20B9'}{formatAmount(paidAmt)} paid of {'\u20B9'}{formatAmount(totalAmt)} total
                         </Typography>
                         <Typography variant="caption" fontWeight={600}>
                           {Math.round(progress)}%
@@ -471,7 +488,7 @@ export default function Debts() {
                           EMI Amount
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {formatCurrency(debt.minimumPayment)}
+                          {'\u20B9'}{formatAmount(debt.emi_amount)}
                         </Typography>
                       </Grid>
                       <Grid item xs={6} sm={3}>
@@ -479,7 +496,7 @@ export default function Debts() {
                           Interest Rate
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {debt.interestRate}%
+                          {safeNumber(debt.interest_rate)}%
                         </Typography>
                       </Grid>
                       <Grid item xs={6} sm={3}>
@@ -487,7 +504,7 @@ export default function Debts() {
                           Due Date
                         </Typography>
                         <Typography variant="body2" fontWeight={600}>
-                          {dayjs(debt.dueDate).format('DD MMM YYYY')}
+                          {dayjs(debt.due_date).format('DD MMM YYYY')}
                         </Typography>
                       </Grid>
                       <Grid item xs={6} sm={3}>
@@ -648,14 +665,19 @@ export default function Debts() {
             {...form.register('interestRate', { valueAsNumber: true })}
           />
 
-          <TextField
-            label="Due Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            error={!!form.formState.errors.dueDate}
-            helperText={form.formState.errors.dueDate?.message}
-            {...form.register('dueDate')}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Due Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              error={!!form.formState.errors.dueDate}
+              helperText={form.formState.errors.dueDate?.message}
+              {...form.register('dueDate')}
+            />
+          </Box>
 
           <TextField
             label="Notes"
@@ -684,10 +706,10 @@ export default function Debts() {
             {paymentTarget && (
               <Box mb={2}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {paymentTarget.name}
+                  {paymentTarget.lender_name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Remaining: <strong>{formatCurrency(paymentTarget.remainingAmount)}</strong>
+                  Remaining: <strong>{'\u20B9'}{formatAmount(paymentTarget.remaining_amount)}</strong>
                 </Typography>
               </Box>
             )}
@@ -695,9 +717,9 @@ export default function Debts() {
               fullWidth
               label="Payment Amount"
               type="number"
-              inputProps={{ min: 0, step: 0.01, max: paymentTarget?.remainingAmount ?? 0 }}
+              inputProps={{ min: 0, step: 0.01, max: paymentTarget ? safeNumber(paymentTarget.remaining_amount) : 0 }}
               error={!!paymentForm.formState.errors.amount}
-              helperText={paymentForm.formState.errors.amount?.message || `Max: ${formatCurrency(paymentTarget?.remainingAmount ?? 0)}`}
+              helperText={paymentForm.formState.errors.amount?.message || `Max: \u20B9${formatAmount(paymentTarget ? safeNumber(paymentTarget.remaining_amount) : 0)}`}
               {...paymentForm.register('amount', { valueAsNumber: true })}
               autoFocus
             />

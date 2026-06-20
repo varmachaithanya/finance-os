@@ -227,24 +227,36 @@ export default function Income() {
             ))}
           </Select>
         </FormControl>
-        <TextField
-          size="small"
-          type="date"
-          label="From"
-          value={filters.startDate}
-          onChange={(e) => { setFilters((f) => ({ ...f, startDate: e.target.value })); setPage(0); }}
-          InputLabelProps={{ shrink: true }}
-          sx={{ maxWidth: 160 }}
-        />
-        <TextField
-          size="small"
-          type="date"
-          label="To"
-          value={filters.endDate}
-          onChange={(e) => { setFilters((f) => ({ ...f, endDate: e.target.value })); setPage(0); }}
-          InputLabelProps={{ shrink: true }}
-          sx={{ maxWidth: 160 }}
-        />
+        <Box sx={{
+          '& .MuiTextField-root': { width: '100%' },
+          '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+          '& input': { padding: '10px 12px', fontSize: '13px' },
+          maxWidth: 160,
+        }}>
+          <TextField
+            size="small"
+            type="date"
+            label="From"
+            value={filters.startDate}
+            onChange={(e) => { setFilters((f) => ({ ...f, startDate: e.target.value })); setPage(0); }}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box>
+        <Box sx={{
+          '& .MuiTextField-root': { width: '100%' },
+          '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+          '& input': { padding: '10px 12px', fontSize: '13px' },
+          maxWidth: 160,
+        }}>
+          <TextField
+            size="small"
+            type="date"
+            label="To"
+            value={filters.endDate}
+            onChange={(e) => { setFilters((f) => ({ ...f, endDate: e.target.value })); setPage(0); }}
+            InputLabelProps={{ shrink: true }}
+          />
+        </Box>
       </Box>
 
       {isError ? (
@@ -313,14 +325,19 @@ export default function Income() {
             {...form.register('notes')}
           />
 
-          <TextField
-            label="Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            error={!!form.formState.errors.date}
-            helperText={form.formState.errors.date?.message}
-            {...form.register('date')}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              error={!!form.formState.errors.date}
+              helperText={form.formState.errors.date?.message}
+              {...form.register('date')}
+            />
+          </Box>
 
           <Controller
             name="is_recurring"

@@ -17,6 +17,7 @@ import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import { login as loginApi } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import AuthInput from '@/components/auth/AuthInput';
+import WelcomeModal from '@/components/common/WelcomeModal';
 import { supportsWebAuthn, decodeServerRequestOptions, getCredential } from '@/utils/webauthn';
 import { webauthnService } from '@/services/webauthnService';
 
@@ -44,6 +45,8 @@ export default function Login() {
   const [bioEmail, setBioEmail] = useState('');
   const [bioLoading, setBioLoading] = useState(false);
   const [showBioEmail, setShowBioEmail] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [welcomeName, setWelcomeName] = useState('');
 
   const {
     control,
@@ -61,7 +64,8 @@ export default function Login() {
     try {
       const result = await loginApi(data.email, data.password);
       setAuth(result.user, result.accessToken, result.refreshToken);
-      navigate('/dashboard', { replace: true });
+      setWelcomeName(result.user.full_name);
+      setShowWelcome(true);
     } catch (err) {
       const axiosErr = err as { response?: { data?: { detail?: string } }; message?: string };
       const msg = axiosErr?.response?.data?.detail || axiosErr?.message || 'Invalid email or password. Please try again.';
@@ -86,9 +90,11 @@ export default function Login() {
         email: bioEmail,
         ...cred,
       });
+      useAuthStore.getState().setAuth({} as any, complete.access_token, complete.refresh_token);
       const meRes = await (await import('@/services/authService')).getMe();
       useAuthStore.getState().setAuth(meRes, complete.access_token, complete.refresh_token);
-      navigate('/dashboard', { replace: true });
+      setWelcomeName(meRes.full_name);
+      setShowWelcome(true);
     } catch (err: any) {
       const msg = err?.response?.data?.detail || err?.message || 'Biometric sign-in failed';
       setApiError(msg);
@@ -98,6 +104,7 @@ export default function Login() {
   }, [bioEmail, navigate]);
 
   return (
+    <>
     <Box
       sx={{
         minHeight: '100dvh',
@@ -422,5 +429,10 @@ export default function Login() {
         </Box>
       </Box>
     </Box>
-  );
+      <WelcomeModal
+        open={showWelcome}
+        onClose={() => { setShowWelcome(false); navigate('/dashboard', { replace: true }); }}
+        userName={welcomeName}
+      />
+    </>);
 }

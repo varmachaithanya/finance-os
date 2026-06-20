@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
   Avatar, Box, Paper, Typography, TextField, Button, MenuItem,
   Snackbar, Alert, CircularProgress, Grid, IconButton,
@@ -11,22 +11,39 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import PageHeader from '@/components/common/PageHeader';
-import { updateMe, changePassword, uploadAvatar, deleteAvatar } from '@/services/authService';
+import { updateMe, changePassword, uploadAvatar, deleteAvatar, getMe } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import { supportsWebAuthn, decodeServerOptions, createCredential } from '@/utils/webauthn';
 import { webauthnService } from '@/services/webauthnService';
 
-const currencies = ['INR', 'USD', 'EUR', 'GBP'] as const;
-const timezones = ['Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Dubai', 'Asia/Singapore'] as const;
+const CURRENCIES = [
+  { value: 'INR', label: '\u20B9 Indian Rupee (INR)' },
+  { value: 'USD', label: '$ US Dollar (USD)' },
+  { value: 'EUR', label: '\u20AC Euro (EUR)' },
+  { value: 'GBP', label: '\u00A3 British Pound (GBP)' },
+  { value: 'AED', label: 'AED Dirham (AED)' },
+  { value: 'SGD', label: 'SGD Singapore Dollar' },
+  { value: 'AUD', label: 'AUD Australian Dollar' },
+];
+
+const TIMEZONES = [
+  { value: 'Asia/Kolkata',    label: 'IST \u2014 India (UTC+5:30)' },
+  { value: 'Asia/Dubai',      label: 'GST \u2014 Dubai (UTC+4)' },
+  { value: 'Asia/Singapore',  label: 'SGT \u2014 Singapore (UTC+8)' },
+  { value: 'Europe/London',   label: 'GMT \u2014 London (UTC+0)' },
+  { value: 'America/New_York',label: 'EST \u2014 New York (UTC-5)' },
+  { value: 'America/Los_Angeles', label: 'PST \u2014 Los Angeles (UTC-8)' },
+  { value: 'Australia/Sydney',label: 'AEST \u2014 Sydney (UTC+10)' },
+];
 
 const profileSchema = z.object({
   full_name: z.string().min(1, 'Full name is required'),
   phone: z.string().regex(/^$|^[+]?[\d\s()-]{7,15}$/, 'Invalid phone number').optional(),
-  currency: z.enum(currencies),
-  timezone: z.enum(timezones),
+  currency: z.string().min(1, 'Currency is required'),
+  timezone: z.string().min(1, 'Timezone is required'),
 });
 
-type ProfileFormData = z.infer<typeof profileSchema>;
+type ProfileFormData = z.infer<typeof profileSchema> & { email?: string };
 
 const passwordSchema = z
   .object({
@@ -63,15 +80,30 @@ export default function Profile() {
   const [avatarSnackbar, setAvatarSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { data: fetchedUser } = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => getMe(),
+  });
+
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       full_name: user?.full_name || '',
       phone: user?.phone || '',
-      currency: (user?.currency as typeof currencies[number]) || 'INR',
-      timezone: (user?.timezone as typeof timezones[number]) || 'Asia/Kolkata',
+      currency: user?.currency || 'INR',
+      timezone: user?.timezone || 'Asia/Kolkata',
     },
   });
+
+  useEffect(() => {
+    const target = fetchedUser || user;
+    if (target) {
+      profileForm.setValue('full_name', target.full_name);
+      profileForm.setValue('phone', target.phone || '');
+      profileForm.setValue('currency', target.currency || 'INR');
+      profileForm.setValue('timezone', target.timezone || 'Asia/Kolkata');
+    }
+  }, [fetchedUser, user, profileForm.setValue]);
 
   const passwordForm = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
@@ -192,6 +224,7 @@ export default function Profile() {
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" fontWeight={600} mb={3}>Edit Profile</Typography>
             <Box component="form" onSubmit={profileForm.handleSubmit((d) => profileMutation.mutate(d))}>
+              <TextField label="Email" fullWidth margin="normal" value={user?.email || ''} disabled />
               <TextField label="Full Name" fullWidth required margin="normal"
                 {...profileForm.register('full_name')}
                 error={!!profileForm.formState.errors.full_name}
@@ -201,10 +234,10 @@ export default function Profile() {
                 error={!!profileForm.formState.errors.phone}
                 helperText={profileForm.formState.errors.phone?.message} />
               <TextField label="Currency" fullWidth select margin="normal" {...profileForm.register('currency')}>
-                {currencies.map((c) => (<MenuItem key={c} value={c}>{c}</MenuItem>))}
+                {CURRENCIES.map((c) => (<MenuItem key={c.value} value={c.value}>{c.label}</MenuItem>))}
               </TextField>
               <TextField label="Timezone" fullWidth select margin="normal" {...profileForm.register('timezone')}>
-                {timezones.map((tz) => (<MenuItem key={tz} value={tz}>{tz}</MenuItem>))}
+                {TIMEZONES.map((tz) => (<MenuItem key={tz.value} value={tz.value}>{tz.label}</MenuItem>))}
               </TextField>
               <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }} disabled={profileMutation.isPending}>
                 {profileMutation.isPending ? <CircularProgress size={24} color="inherit" /> : 'Save Changes'}

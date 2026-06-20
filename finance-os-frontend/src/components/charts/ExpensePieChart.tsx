@@ -7,8 +7,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Box, Typography } from '@mui/material';
-import PieChartIcon from '@mui/icons-material/PieChart';
+import { Box, Typography, useTheme } from '@mui/material';
+import { CATEGORY_LOGOS } from '@/utils/logos';
 
 interface PieData {
   name: string;
@@ -51,22 +51,50 @@ const CustomTooltip: React.FC<{
 };
 
 const ExpensePieChart: React.FC<ExpensePieChartProps> = ({ data }) => {
+  const theme = useTheme();
   const isEmpty = !data || data.length === 0;
   if (isEmpty) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 6, minHeight: 350 }}>
-        <PieChartIcon sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          No expense data to display
+      <Box sx={(theme) => ({
+        background: theme.palette.background.paper,
+        borderRadius: '16px',
+        border: 1,
+        borderColor: 'divider',
+        padding: '20px',
+        height: 280,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 1,
+      })}>
+        <Typography fontSize={15} fontWeight={600}
+          color="text.primary" mb={2} alignSelf="flex-start">
+          {'\u{1F4CA}'} Expense Breakdown
         </Typography>
-        <Typography variant="body2" color="text.disabled">
-          Add some expenses to see your spending breakdown
+        <Typography fontSize={32}>{'\u{1F4CA}'}</Typography>
+        <Typography fontSize={13} color="text.secondary">
+          No data yet
+        </Typography>
+        <Typography fontSize={11} color="text.secondary">
+          Add expenses to see insights
         </Typography>
       </Box>
     );
   }
   return (
-    <ResponsiveContainer width="100%" height={350}>
+    <Box sx={{
+      backgroundColor: 'background.paper',
+      borderRadius: '16px',
+      border: 1,
+      borderColor: 'divider',
+      padding: '20px',
+    }}>
+      <Typography fontSize={15} fontWeight={600}
+        color="text.primary" mb={2}>
+        {'\u{1F4CA}'} Expense Breakdown
+      </Typography>
+      <ResponsiveContainer width="100%" height={280}>
       <PieChart>
         <Pie
           data={data}
@@ -82,13 +110,14 @@ const ExpensePieChart: React.FC<ExpensePieChartProps> = ({ data }) => {
           }
         >
           {data.map((entry, idx) => (
-            <Cell key={idx} fill={entry.color} />
+            <Cell key={idx} fill={entry.color || CATEGORY_LOGOS[entry.name]?.color || '#1976d2'} />
           ))}
         </Pie>
         <Tooltip content={<CustomTooltip />} />
         <Legend />
       </PieChart>
     </ResponsiveContainer>
+    </Box>
   );
 };
 

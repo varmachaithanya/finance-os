@@ -32,6 +32,7 @@ import DataTable from '@/components/common/DataTable';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { expenseService } from '@/services/expenseService';
 import { categoryService } from '@/services/categoryService';
+import { CategoryLogo } from '@/utils/logos';
 import dayjs from 'dayjs';
 
 const expenseSchema = z.object({
@@ -115,7 +116,7 @@ export default function Expenses() {
     queryFn: () => categoryService.list('expense'),
   });
 
-  const categories = (categoriesRaw as any)?.data ?? [];
+  const categories = Array.isArray(categoriesRaw) ? categoriesRaw : (categoriesRaw as any)?.data ?? [];
 
   const rows: ExpenseRow[] = useMemo(() =>
     (expensesData?.data ?? []).map((e) => {
@@ -260,11 +261,14 @@ export default function Expenses() {
       id: 'category',
       label: 'Category',
       render: (row: ExpenseRow) => (
-        <Chip
-          label={row.category?.name ?? 'Uncategorized'}
-          size="small"
-          sx={{ bgcolor: row.category?.color ?? '#e0e0e0', color: row.category?.color ? '#fff' : undefined }}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <CategoryLogo category={row.category?.name ?? 'Other'} />
+          <Chip
+            label={row.category?.name ?? 'Uncategorized'}
+            size="small"
+            sx={{ bgcolor: row.category?.color ?? '#e0e0e0', color: row.category?.color ? '#fff' : undefined }}
+          />
+        </Box>
       ),
     },
     {
@@ -310,13 +314,29 @@ export default function Expenses() {
       />
 
       <Grid container spacing={2} mb={3}>
-        <Grid item xs={12} sm={6} md={2}>
-          <TextField fullWidth size="small" label="From" type="date" value={fromDate}
-            onChange={(e) => { setFromDate(e.target.value); setPage(0); }} InputLabelProps={{ shrink: true }} />
+        <Grid item xs={6} sm={3}>
+          <Box sx={{
+            width: '100%',
+            '& .MuiTextField-root': { width: '100%' },
+            '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <Typography fontSize={11} color="text.secondary" mb={0.5}>FROM DATE</Typography>
+            <TextField fullWidth size="small" type="date" value={fromDate}
+              onChange={(e) => { setFromDate(e.target.value); setPage(0); }} InputLabelProps={{ shrink: true }} />
+          </Box>
         </Grid>
-        <Grid item xs={12} sm={6} md={2}>
-          <TextField fullWidth size="small" label="To" type="date" value={toDate}
-            onChange={(e) => { setToDate(e.target.value); setPage(0); }} InputLabelProps={{ shrink: true }} />
+        <Grid item xs={6} sm={3}>
+          <Box sx={{
+            width: '100%',
+            '& .MuiTextField-root': { width: '100%' },
+            '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <Typography fontSize={11} color="text.secondary" mb={0.5}>TO DATE</Typography>
+            <TextField fullWidth size="small" type="date" value={toDate}
+              onChange={(e) => { setToDate(e.target.value); setPage(0); }} InputLabelProps={{ shrink: true }} />
+          </Box>
         </Grid>
         <Grid item xs={12} sm={6} md={2}>
           <FormControl fullWidth size="small">
@@ -383,10 +403,10 @@ export default function Expenses() {
                 <InputLabel>Category</InputLabel>
               <Select {...register('category_id')} label="Category" MenuProps={{ disablePortal: true }}>
                 <MenuItem value="">Select category</MenuItem>
-                  {categories.map((cat) => (
+                  {categories.map((cat: any) => (
                     <MenuItem key={cat.id} value={cat.id}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {cat.color && <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: cat.color }} />}
+                        <CategoryLogo category={cat.name} />
                         {cat.name}
                       </Box>
                     </MenuItem>
@@ -414,13 +434,19 @@ export default function Expenses() {
                 </Box>
               )}
 
-              <TextField
-                fullWidth label="Date" type="date"
-                {...register('expense_date')}
-                error={!!errors.expense_date}
-                helperText={errors.expense_date?.message}
-                InputLabelProps={{ shrink: true }}
-              />
+              <Box sx={{
+                '& .MuiTextField-root': { width: '100%' },
+                '& .MuiInputBase-root': { width: '100%', fontSize: '13px' },
+                '& input': { padding: '10px 12px', fontSize: '13px' },
+              }}>
+                <TextField
+                  fullWidth label="Date" type="date"
+                  {...register('expense_date')}
+                  error={!!errors.expense_date}
+                  helperText={errors.expense_date?.message}
+                  InputLabelProps={{ shrink: true }}
+                />
+              </Box>
 
               <FormControl fullWidth error={!!errors.payment_method}>
                 <InputLabel>Payment Method</InputLabel>

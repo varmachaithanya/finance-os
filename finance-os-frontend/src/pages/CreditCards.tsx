@@ -42,6 +42,18 @@ import {
 import PageHeader from '@/components/common/PageHeader';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import { creditCardService, type CreditCard, type Utilization } from '@/services/creditCardService';
+import { BankLogo, CardNetworkBadge } from '@/utils/logos';
+
+const formatAmount = (value: any): string => {
+  const num = parseFloat(value);
+  if (isNaN(num)) return '0';
+  return num.toLocaleString('en-IN');
+};
+
+const safeNumber = (value: any): number => {
+  const num = parseFloat(value);
+  return isNaN(num) ? 0 : num;
+};
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
@@ -114,7 +126,7 @@ interface DueAlert {
 function computeDueAlerts(cards: CreditCard[], minPaymentPercent = 0.05): DueAlert[] {
   return cards
     .map((c) => {
-      const bal = c.outstanding_balance > 0 ? c.outstanding_balance : 0;
+      const bal = safeNumber(c.outstanding_balance) > 0 ? safeNumber(c.outstanding_balance) : 0;
       return {
         cardName: c.card_name,
         dueDate: c.due_date,
@@ -246,10 +258,19 @@ export default function CreditCards() {
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const cardList = (cards as any)?.data ?? [];
-  const utilList = (utilization as any)?.data ?? [];
+  const cardList = Array.isArray(cards) ? cards : (cards as any)?.data ?? [];
+  const utilList = Array.isArray(utilization) ? utilization : (utilization as any)?.data ?? [];
 
   const dueAlerts = useMemo(() => computeDueAlerts(cardList), [cardList]);
+
+  const avgUtilization = cardList?.length > 0
+    ? cardList.reduce((sum: number, card: any) => {
+        const util = safeNumber(card.credit_limit) > 0
+          ? (safeNumber(card.outstanding_balance) / safeNumber(card.credit_limit)) * 100
+          : 0;
+        return sum + util;
+      }, 0) / cardList.length
+    : 0;
 
   const renderSkeletons = () =>
     Array.from({ length: 6 }, (_, i) => (
@@ -334,27 +355,34 @@ export default function CreditCards() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {cardList.map((card) => {
-            const utilizationPercent = card.limit > 0 ? (card.balance / card.limit) * 100 : 0;
-            const daysRemaining = getDaysRemaining(card.dueDate);
+          {cardList.map((card: any) => {
+            const creditLimit = safeNumber(card.credit_limit);
+            const outstanding = safeNumber(card.outstanding_balance);
+            const utilizationPercent = creditLimit > 0 ? (outstanding / creditLimit) * 100 : 0;
+            const daysRemaining = getDaysRemaining(card.due_date);
             return (
               <Grid item xs={12} sm={6} md={4} key={card.id}>
                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                   <CardContent sx={{ flexGrow: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                      <Box>
-                        <Typography variant="h6" fontWeight={600} lineHeight={1.3}>
-                          {card.issuer || 'Bank'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {card.name}
-                        </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <BankLogo bankName={card.bank_name} />
+                        <Box>
+                          <Typography variant="h6" fontWeight={600} lineHeight={1.3}>
+                            {card.bank_name || 'Bank'}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {card.card_name}
+                            </Typography>
+                            <CardNetworkBadge cardName={card.card_name} />
+                          </Box>
+                        </Box>
                       </Box>
-                      <CreditCardIcon color="action" />
                     </Box>
 
                     <Typography variant="body1" fontFamily="monospace" letterSpacing={2} mb={2}>
-                      •••• {card.lastFourDigits || '0000'}
+                      {'\u2022\u2022\u2022\u2022'} {card.last_four_digits || '0000'}
                     </Typography>
 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
@@ -362,15 +390,15 @@ export default function CreditCards() {
                         Credit Limit
                       </Typography>
                       <Typography variant="body2" fontWeight={600}>
-                        {formatCurrency(card.limit)}
+                        {'\u20B9'}{formatAmount(creditLimit)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                       <Typography variant="body2" color="text.secondary">
                         Outstanding
                       </Typography>
-                      <Typography variant="body2" fontWeight={600} color={card.balance > 0 ? 'error.main' : 'success.main'}>
-                        {formatCurrency(card.balance)}
+                      <Typography variant="body2" fontWeight={600} color={outstanding > 0 ? 'error.main' : 'success.main'}>
+                        {'\u20B9'}{formatAmount(outstanding)}
                       </Typography>
                     </Box>
 
@@ -402,7 +430,7 @@ export default function CreditCards() {
                         variant={daysRemaining <= 3 ? 'filled' : 'outlined'}
                       />
                       <Chip
-                        label={`Due: ${dayjs(card.dueDate).format('DD MMM')}`}
+                        label={`Due: ${dayjs(card.due_date).format('DD MMM')}`}
                         size="small"
                         variant="outlined"
                       />
@@ -538,23 +566,33 @@ export default function CreditCards() {
             {...form.register('balance', { valueAsNumber: true })}
           />
 
-          <TextField
-            label="Due Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            error={!!form.formState.errors.dueDate}
-            helperText={form.formState.errors.dueDate?.message}
-            {...form.register('dueDate')}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Due Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              error={!!form.formState.errors.dueDate}
+              helperText={form.formState.errors.dueDate?.message}
+              {...form.register('dueDate')}
+            />
+          </Box>
 
-          <TextField
-            label="Statement Date"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            error={!!form.formState.errors.statementDate}
-            helperText={form.formState.errors.statementDate?.message}
-            {...form.register('statementDate')}
-          />
+          <Box sx={{
+            '& .MuiTextField-root': { width: '100%' },
+            '& input': { padding: '10px 12px', fontSize: '13px' },
+          }}>
+            <TextField
+              label="Statement Date"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              error={!!form.formState.errors.statementDate}
+              helperText={form.formState.errors.statementDate?.message}
+              {...form.register('statementDate')}
+            />
+          </Box>
 
           <TextField
             label="APR (%)"

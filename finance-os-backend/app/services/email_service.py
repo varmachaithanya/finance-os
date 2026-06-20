@@ -458,3 +458,165 @@ def send_budget_alert(recipient: str, category_name: str, spent: str, budget_amo
         _budget_alert_text(category_name, spent, budget_amount, pct),
     )
     send_email(recipient, subject, html, text)
+
+
+# ---------------------------------------------------------------------------
+# Daily expense reminder
+# ---------------------------------------------------------------------------
+
+def build_daily_reminder_email(user_name: str, today: str) -> str:
+    """Build HTML email for daily expense reminder."""
+    first_name = user_name.split()[0] if user_name else "there"
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#0B1120;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0B1120;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:520px;background:#111E33;border-radius:20px;border:1px solid #1E2D45;overflow:hidden;">
+          <tr><td style="height:4px;background:linear-gradient(90deg,#00C9A7,#0EA5E9);"></td></tr>
+          <tr>
+            <td style="padding:28px 32px 0;text-align:center;">
+              <div style="display:inline-flex;align-items:center;gap:10px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;text-align:center;line-height:44px;">W</div>
+                <span style="font-size:18px;font-weight:700;color:#F0F6FF;">WealthWise</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 0;text-align:center;">
+              <div style="font-size:40px;margin-bottom:12px;">\U0001f306</div>
+              <h1 style="margin:0;font-size:24px;font-weight:700;color:#F0F6FF;">Good Evening, {first_name}!</h1>
+              <p style="margin:8px 0 0;font-size:14px;color:#4A6080;">{today}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px;">
+              <div style="background:#0B1120;border:1px solid #1E2D45;border-radius:16px;padding:24px;text-align:center;">
+                <div style="font-size:32px;margin-bottom:12px;">\U0001f4dd</div>
+                <h2 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#F0F6FF;">Did you log today's expenses?</h2>
+                <p style="margin:0;font-size:14px;color:#4A6080;line-height:1.6;">Taking 2 minutes to track your spending today keeps your finances on track and helps you reach your financial goals faster.</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 24px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="33%" style="padding:0 4px;">
+                    <div style="background:#00C9A720;border:1px solid #00C9A730;border-radius:12px;padding:14px;text-align:center;">
+                      <div style="font-size:20px;margin-bottom:6px;">\U0001f354</div>
+                      <div style="font-size:11px;color:#00C9A7;font-weight:500;">Food</div>
+                    </div>
+                  </td>
+                  <td width="33%" style="padding:0 4px;">
+                    <div style="background:#0EA5E920;border:1px solid #0EA5E930;border-radius:12px;padding:14px;text-align:center;">
+                      <div style="font-size:20px;margin-bottom:6px;">\u26fd</div>
+                      <div style="font-size:11px;color:#0EA5E9;font-weight:500;">Fuel</div>
+                    </div>
+                  </td>
+                  <td width="33%" style="padding:0 4px;">
+                    <div style="background:#EF9F2720;border:1px solid #EF9F2730;border-radius:12px;padding:14px;text-align:center;">
+                      <div style="font-size:20px;margin-bottom:6px;">\U0001f6cd\ufe0f</div>
+                      <div style="font-size:11px;color:#EF9F27;font-weight:500;">Shopping</div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 32px;text-align:center;">
+              <a href="{settings.FRONTEND_URL}/expenses" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:600;letter-spacing:0.3px;">
+                Add Today's Expenses \u2192
+              </a>
+              <p style="margin:16px 0 0;font-size:12px;color:#4A6080;">
+                Or visit <a href="{settings.FRONTEND_URL}" style="color:#00C9A7;text-decoration:none;">your dashboard</a>
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 24px;">
+              <div style="border-left:3px solid #00C9A7;padding:12px 16px;background:#00C9A710;border-radius:0 8px 8px 0;">
+                <p style="margin:0;font-size:13px;color:#F0F6FF;font-style:italic;">"A budget is telling your money where to go instead of wondering where it went."</p>
+                <p style="margin:6px 0 0;font-size:11px;color:#4A6080;">\u2014 Dave Ramsey</p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #1E2D45;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#4A6080;">
+                You are receiving this because you have an account on WealthWise.<br/>
+                <a href="{settings.FRONTEND_URL}/profile" style="color:#4A6080;">Manage notification preferences</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+
+def build_due_alert_email(user_name: str, due_items: list, alert_type: str) -> str:
+    """Build HTML email for due date alerts."""
+    first_name = user_name.split()[0] if user_name else "there"
+    items_html = ""
+    for item in due_items:
+        color = "#E24B4A" if item.get("overdue") else "#EF9F27"
+        status = "OVERDUE" if item.get("overdue") else f"Due in {item.get('days_remaining', 0)} days"
+        items_html += f"""
+        <tr>
+          <td style="padding:12px 0;border-bottom:1px solid #1E2D45;">
+            <div style="font-size:14px;font-weight:500;color:#F0F6FF;">{item.get('name', '')}</div>
+            <div style="font-size:12px;color:#4A6080;margin-top:2px;">{item.get('type', '')} \u00b7 Due: {item.get('due_date', '')}</div>
+          </td>
+          <td style="padding:12px 0;border-bottom:1px solid #1E2D45;text-align:right;">
+            <div style="font-size:14px;font-weight:600;color:#F0F6FF;">\u20b9{item.get('amount', 0):,.0f}</div>
+            <div style="font-size:11px;color:{color};font-weight:500;margin-top:2px;">{status}</div>
+          </td>
+        </tr>"""
+
+    return f"""<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#0B1120;font-family:-apple-system,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0B1120;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:520px;background:#111E33;border-radius:20px;border:1px solid #1E2D45;overflow:hidden;">
+          <tr><td style="height:4px;background:linear-gradient(90deg,#E24B4A,#EF9F27);"></td></tr>
+          <tr>
+            <td style="padding:32px 32px 0;text-align:center;">
+              <div style="font-size:40px;">\u26a0\ufe0f</div>
+              <h1 style="margin:12px 0 4px;font-size:22px;font-weight:700;color:#F0F6FF;">Payment Due Alert</h1>
+              <p style="margin:0;font-size:14px;color:#4A6080;">Hey {first_name}, you have upcoming payments</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                {items_html}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 32px 32px;text-align:center;">
+              <a href="{settings.FRONTEND_URL}/dashboard" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#E24B4A,#EF9F27);color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:600;">View Dashboard \u2192</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 32px;border-top:1px solid #1E2D45;text-align:center;">
+              <p style="margin:0;font-size:11px;color:#4A6080;">You are receiving this because you have an account on WealthWise.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
