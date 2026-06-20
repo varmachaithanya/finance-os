@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  Box, Typography, Grid, Alert, Skeleton,
+  Box, Typography, Grid, Alert, Skeleton, Paper,
   Table, TableHead, TableBody, TableRow, TableCell, TableContainer,
 } from '@mui/material';
 import StatCard from '@/components/common/StatCard';
