@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   Box, Typography, Grid, Alert, Skeleton, Paper,
@@ -39,7 +39,6 @@ const dotColor: Record<string, string> = {
 
 export default function Dashboard() {
   const [showWelcome, setShowWelcome] = useState(false);
-  const shownRef = useRef(false);
   const user = useAuthStore((s) => s.user);
 
   const summaryQuery = useQuery({
@@ -53,8 +52,8 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (!summaryQuery.isLoading && !summaryQuery.error && !shownRef.current) {
-      shownRef.current = true;
+    if (!summaryQuery.isLoading && !summaryQuery.error && !sessionStorage.getItem('welcome_shown')) {
+      sessionStorage.setItem('welcome_shown', 'true');
       setShowWelcome(true);
     }
   });
