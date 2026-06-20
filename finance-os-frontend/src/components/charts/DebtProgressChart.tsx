@@ -8,16 +8,20 @@ import { Box, Typography, useTheme } from '@mui/material';
 interface DebtProgressChartProps {
   data: any[];
   debts?: any[];
+  totalOwed?: number;
+  totalPaid?: number;
 }
 
-const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts }) => {
+const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, totalOwed, totalPaid }) => {
   const theme = useTheme();
-  const totalDebt = debts?.reduce((sum: number, d: any) =>
+  const computedTotalDebt = debts?.reduce((sum: number, d: any) =>
     sum + parseFloat(d.total_amount || 0), 0) || 0;
-  const totalPaid = debts?.reduce((sum: number, d: any) =>
+  const computedTotalPaid = debts?.reduce((sum: number, d: any) =>
     sum + parseFloat(d.paid_amount || 0), 0) || 0;
-  const paidPct = totalDebt > 0
-    ? Math.round((totalPaid / totalDebt) * 100) : 0;
+  const tDebt = totalOwed ?? computedTotalDebt;
+  const tPaid = totalPaid ?? computedTotalPaid;
+  const paidPct = tDebt > 0
+    ? Math.round((tPaid / tDebt) * 100) : 0;
 
   const radialData = [{ name: 'Paid', value: paidPct, fill: '#00C9A7' }];
 
@@ -89,19 +93,19 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts }) =>
           <Box sx={{ mb: 2 }}>
             <Typography fontSize={11} color="text.secondary">Total Debt</Typography>
             <Typography fontSize={16} fontWeight={600} color="#E24B4A">
-              {'\u20B9'}{totalDebt.toLocaleString('en-IN')}
+              {'\u20B9'}{tDebt.toLocaleString('en-IN')}
             </Typography>
           </Box>
           <Box sx={{ mb: 2 }}>
             <Typography fontSize={11} color="text.secondary">Total Paid</Typography>
             <Typography fontSize={16} fontWeight={600} color="#00C9A7">
-              {'\u20B9'}{totalPaid.toLocaleString('en-IN')}
+              {'\u20B9'}{tPaid.toLocaleString('en-IN')}
             </Typography>
           </Box>
           <Box>
             <Typography fontSize={11} color="text.secondary">Remaining</Typography>
             <Typography fontSize={16} fontWeight={600} color="text.primary">
-              {'\u20B9'}{(totalDebt - totalPaid).toLocaleString('en-IN')}
+              {'\u20B9'}{(tDebt - tPaid).toLocaleString('en-IN')}
             </Typography>
           </Box>
         </Box>

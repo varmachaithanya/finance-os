@@ -4,6 +4,8 @@ export interface DashboardSummary {
   total_income_month: number;
   total_expenses_month: number;
   total_debt: number;
+  total_paid_debt: number;
+  active_debts: number;
   remaining_balance: number;
   monthly_savings: number;
   credit_card_utilization_avg: number;

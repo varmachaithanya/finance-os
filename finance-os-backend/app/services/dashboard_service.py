@@ -36,6 +36,7 @@ class DashboardService:
 
         debt_summary = self.debt_repo.get_summary(user_id)
         total_owed, total_paid, active_count = debt_summary
+        print(f"[DashboardService] debt_summary: total_owed={total_owed}, total_paid={total_paid}, active_count={active_count}", flush=True)
 
         cards = self.credit_card_repo.get_active_by_user(user_id)
         util_pcts = []
@@ -78,6 +79,8 @@ class DashboardService:
             "total_income_month": total_income,
             "total_expenses_month": total_expenses,
             "total_debt": total_owed,
+            "total_paid_debt": total_paid,
+            "active_debts": active_count,
             "remaining_balance": total_income - total_expenses,
             "monthly_savings": savings,
             "credit_card_utilization_avg": round(avg_util, 2),
@@ -115,6 +118,8 @@ class DashboardService:
             monthly_map[label]["income"] = total
 
         monthly_trend = sorted(monthly_map.values(), key=lambda x: x["month"])
+        print(f"[DashboardService] monthly_trend: {monthly_trend}", flush=True)
+        print(f"[DashboardService] expense_monthly raw: {expense_monthly}", flush=True)
 
         debts, _ = self.debt_repo.get_by_user(user_id, limit=1000)
         total_debt_history = []
@@ -123,15 +128,19 @@ class DashboardService:
         )
         total_debt_history.append({"month": "Current", "total_debt": running_total})
 
+        debt_reduction = [
+            {
+                "month": str(d.due_date or ""),
+                "total_debt": float(d.total_amount - d.paid_amount),
+            }
+            for d in debts[:12]
+        ]
+        print(f"[DashboardService] debts raw: count={len(debts)}, first={debts[0].__dict__ if debts else None}", flush=True)
+        print(f"[DashboardService] debt_reduction: {debt_reduction}", flush=True)
+
         return {
             "expense_by_category": expense_categories,
             "monthly_trend": monthly_trend,
             "income_vs_expense": monthly_trend,
-            "debt_reduction": [
-                {
-                    "month": str(d.due_date or ""),
-                    "total_debt": float(d.total_amount - d.paid_amount),
-                }
-                for d in debts[:12]
-            ],
+            "debt_reduction": debt_reduction,
         }

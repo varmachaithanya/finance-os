@@ -105,12 +105,16 @@ export default function Dashboard() {
   }));
 
   const monthlyTrendData = (c.monthly_trend ?? []).map(e => ({ month: e.month, expenses: Number(e.expenses) }));
+  console.log('Monthly Trend Data', monthlyTrendData);
 
   const incomeVsExpenseData = (c.income_vs_expense ?? []).map(e => ({
     month: e.month, income: Number(e.income), expenses: Number(e.expenses),
   }));
 
   const debtProgressData = (c.debt_reduction ?? []).map(e => ({ month: e.month, total_debt: Number(e.total_debt) }));
+  console.log('Debt Progress Data', debtProgressData);
+  console.log('Dashboard Summary', s);
+  console.log('Dashboard Charts', c);
 
   return (
     <Box>
@@ -124,96 +128,84 @@ export default function Dashboard() {
         ))}
       </Grid>
 
-      <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><ExpensePieChart data={expensePieData} /></Box>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><MonthlyTrendChart data={monthlyTrendData} /></Box>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><IncomeVsExpenseChart data={incomeVsExpenseData} /></Box>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Box sx={{ width: '100%' }}><DebtProgressChart data={debtProgressData} /></Box>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 4 }}>
+        <ExpensePieChart data={expensePieData} />
+        <MonthlyTrendChart data={monthlyTrendData} />
+        <IncomeVsExpenseChart data={incomeVsExpenseData} />
+        <DebtProgressChart data={debtProgressData} totalOwed={s.total_debt} totalPaid={s.total_paid_debt} />
+      </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Paper sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="h6" fontWeight={600}>Upcoming Due Payments</Typography>
-            </Box>
-            <TableContainer sx={{ flex: 1 }}>
-              <Table>
-                <TableHead>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+        <Paper sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={600}>Upcoming Due Payments</Typography>
+          </Box>
+          <TableContainer sx={{ flex: 1 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Due Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(s.upcoming_dues ?? []).length === 0 ? (
                   <TableRow>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Name</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                    <TableCell>Due Date</TableCell>
+                    <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>No upcoming dues</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {(s.upcoming_dues ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 4, color: 'text.secondary' }}>No upcoming dues</TableCell>
+                ) : (
+                  (s.upcoming_dues ?? []).map((row, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: dotColor[row.type] ?? '#9E9E9E' }} />
+                          <Typography variant="body2" textTransform="capitalize">{row.type.replace('_', ' ')}</Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>{row.name}</TableCell>
+                      <TableCell align="right">{fmt(row.amount)}</TableCell>
+                      <TableCell>{dayjs(row.due_date).format('DD MMM YYYY')}</TableCell>
                     </TableRow>
-                  ) : (
-                    (s.upcoming_dues ?? []).map((row, i) => (
-                      <TableRow key={i}>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Box sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: dotColor[row.type] ?? '#9E9E9E' }} />
-                            <Typography variant="body2" textTransform="capitalize">{row.type.replace('_', ' ')}</Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell>{row.name}</TableCell>
-                        <TableCell align="right">{fmt(row.amount)}</TableCell>
-                        <TableCell>{dayjs(row.due_date).format('DD MMM YYYY')}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
-          <Paper sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-              <Typography variant="h6" fontWeight={600}>Upcoming Renewals</Typography>
-            </Box>
-            <TableContainer sx={{ flex: 1 }}>
-              <Table>
-                <TableHead>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+        <Paper sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight={600}>Upcoming Renewals</Typography>
+          </Box>
+          <TableContainer sx={{ flex: 1 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Service</TableCell>
+                  <TableCell align="right">Amount</TableCell>
+                  <TableCell>Renewal Date</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {(s.upcoming_renewals ?? []).length === 0 ? (
                   <TableRow>
-                    <TableCell>Service</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                    <TableCell>Renewal Date</TableCell>
+                    <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>No upcoming renewals</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {(s.upcoming_renewals ?? []).length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={3} align="center" sx={{ py: 4, color: 'text.secondary' }}>No upcoming renewals</TableCell>
+                ) : (
+                  (s.upcoming_renewals ?? []).map((row, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{row.service_name}</TableCell>
+                      <TableCell align="right">{fmt(row.amount)}</TableCell>
+                      <TableCell>{dayjs(row.renewal_date).format('DD MMM YYYY')}</TableCell>
                     </TableRow>
-                  ) : (
-                    (s.upcoming_renewals ?? []).map((row, i) => (
-                      <TableRow key={i}>
-                        <TableCell>{row.service_name}</TableCell>
-                        <TableCell align="right">{fmt(row.amount)}</TableCell>
-                        <TableCell>{dayjs(row.renewal_date).format('DD MMM YYYY')}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-      </Grid>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </Box>
       <WelcomeModal
         open={showWelcome}
         onClose={() => setShowWelcome(false)}
