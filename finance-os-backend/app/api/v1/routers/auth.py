@@ -143,6 +143,16 @@ def delete_avatar(
     return UserResponse.model_validate(user)
 
 
+@router.delete("/me", summary="Delete current user account")
+def delete_me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    service = AuthService(db)
+    service.delete_account(str(current_user.id))
+    return {"message": "Account deleted successfully"}
+
+
 @router.post("/change-password", summary="Change password")
 def change_password(
     body: ChangePasswordRequest,

@@ -563,6 +563,77 @@ def build_daily_reminder_email(user_name: str, today: str) -> str:
 </html>"""
 
 
+# ---------------------------------------------------------------------------
+# Admin notifications (new user, account deletion)
+# ---------------------------------------------------------------------------
+
+ADMIN_EMAIL = "varmachaithanya369@gmail.com"
+
+
+def send_new_user_notification(email: str, full_name: str) -> None:
+    text = f"""New user registered
+
+Name: {full_name}
+Email: {email}
+Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+
+A new user has signed up for WealthWise."""
+    html = f"""<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#0B1120;font-family:Inter,Arial,sans-serif">
+<tr><td style="padding:40px 16px">
+<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:32px">
+<tr><td style="text-align:center;padding-bottom:16px">
+<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+</td></tr>
+<tr><td style="text-align:center;padding-bottom:8px">
+<h1 style="color:#F0F6FF;font-size:20px;margin:0">New User Registered</h1>
+</td></tr>
+<tr><td style="background:#0B1120;border:1px solid #1E2D45;border-radius:12px;padding:20px;margin-top:20px">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%">
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:8px">Name</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:8px">{full_name}</td></tr>
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:8px">Email</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:8px">{email}</td></tr>
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:0">Time</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:0">{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</td></tr>
+</table>
+</td></tr>
+</table>
+</td></tr></table>"""
+    send_email(ADMIN_EMAIL, "New User Registered — WealthWise", html, text)
+
+
+def send_account_deletion_notification(email: str, full_name: str) -> None:
+    text = f"""Account deleted
+
+Name: {full_name}
+Email: {email}
+Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
+
+A user has deleted their WealthWise account."""
+    html = f"""<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#0B1120;font-family:Inter,Arial,sans-serif">
+<tr><td style="padding:40px 16px">
+<table role="presentation" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:32px">
+<tr><td style="text-align:center;padding-bottom:16px">
+<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#E24B4A,#EF9F27);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+</td></tr>
+<tr><td style="text-align:center;padding-bottom:8px">
+<h1 style="color:#F0F6FF;font-size:20px;margin:0">Account Deleted</h1>
+</td></tr>
+<tr><td style="background:#0B1120;border:1px solid #1E2D45;border-radius:12px;padding:20px;margin-top:20px">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%">
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:8px">Name</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:8px">{full_name}</td></tr>
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:8px">Email</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:8px">{email}</td></tr>
+<tr><td style="color:#4A6080;font-size:13px;padding-bottom:0">Time</td>
+<td style="color:#F0F6FF;font-size:14px;text-align:right;padding-bottom:0">{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}</td></tr>
+</table>
+</td></tr>
+</table>
+</td></tr></table>"""
+    send_email(ADMIN_EMAIL, "Account Deleted — WealthWise", html, text)
+
+
 def build_due_alert_email(user_name: str, due_items: list, alert_type: str) -> str:
     """Build HTML email for due date alerts."""
     first_name = user_name.split()[0] if user_name else "there"

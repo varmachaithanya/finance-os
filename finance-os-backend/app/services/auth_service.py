@@ -16,6 +16,8 @@ from app.services.email_service import (
     send_welcome_email,
     send_login_notification,
     send_password_reset_email,
+    send_new_user_notification,
+    send_account_deletion_notification,
 )
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,7 @@ class AuthService:
         )
         try:
             send_welcome_email(email, full_name)
+            send_new_user_notification(email, full_name)
         except Exception:
             logger.exception("Failed to send welcome email to %s", email)
         return user
@@ -104,6 +107,21 @@ class AuthService:
                 detail="User not found",
             )
         return user
+
+    def delete_account(self, user_id: str) -> None:
+        user = self.repo.get(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+        email = user.email
+        full_name = user.full_name
+        self.repo.delete(user_id)
+        try:
+            send_account_deletion_notification(email, full_name)
+        except Exception:
+            logger.exception("Failed to send account deletion notification")
 
     def change_password(self, user_id: str, current_password: str, new_password: str) -> None:
         user = self.repo.get(user_id)

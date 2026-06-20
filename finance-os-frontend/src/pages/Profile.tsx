@@ -1,8 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
   Avatar, Box, Paper, Typography, TextField, Button, MenuItem,
   Snackbar, Alert, CircularProgress, Grid, IconButton,
+  Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from '@mui/material';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
@@ -11,7 +13,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import PageHeader from '@/components/common/PageHeader';
-import { updateMe, changePassword, uploadAvatar, deleteAvatar, getMe } from '@/services/authService';
+import { updateMe, changePassword, uploadAvatar, deleteAvatar, deleteAccount, getMe } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import { supportsWebAuthn, decodeServerOptions, createCredential } from '@/utils/webauthn';
 import { webauthnService } from '@/services/webauthnService';
@@ -80,6 +82,8 @@ export default function Profile() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarSnackbar, setAvatarSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({ open: false, message: '', severity: 'success' });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: fetchedUser } = useQuery({
     queryKey: ['profile'],
@@ -146,6 +150,18 @@ export default function Profile() {
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { detail?: string } }; message?: string };
       setPasswordError(e?.response?.data?.detail || e?.message || 'Failed to change password');
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: deleteAccount,
+    onSuccess: () => {
+      useAuthStore.getState().logout();
+      navigate('/login');
+    },
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { detail?: string } }; message?: string };
+      setAvatarSnackbar({ open: true, message: e?.response?.data?.detail || 'Failed to delete account', severity: 'error' });
     },
   });
 
@@ -374,7 +390,51 @@ export default function Profile() {
               </Button>
             </Paper>
           </Grid>
+        <Grid item xs={12}>
+          <Paper sx={{ p: 3, border: '1px solid rgba(226, 75, 74, 0.3)' }}>
+            <Typography variant="h6" fontWeight={600} mb={1} color="#E24B4A">Danger Zone</Typography>
+            <Typography sx={{ color: '#4A6080', fontSize: 14, mb: 2 }}>
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </Typography>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteAccountMutation.isPending}
+              sx={{ borderRadius: '10px', textTransform: 'none' }}
+            >
+              {deleteAccountMutation.isPending ? <CircularProgress size={20} color="error" sx={{ mr: 1 }} /> : null}
+              Delete Account
+            </Button>
+          </Paper>
+        </Grid>
       </Grid>
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle sx={{ color: '#E24B4A', fontWeight: 700 }}>Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ color: '#4A6080' }}>
+            Are you sure you want to delete your account? This will permanently remove all your data including expenses, income, budgets, credit cards, debts, subscriptions, and settings. This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#4A6080', textTransform: 'none' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setDeleteDialogOpen(false);
+              deleteAccountMutation.mutate();
+            }}
+            color="error"
+            variant="contained"
+            disabled={deleteAccountMutation.isPending}
+            sx={{ borderRadius: '10px', textTransform: 'none' }}
+          >
+            {deleteAccountMutation.isPending ? <CircularProgress size={20} sx={{ color: '#fff', mr: 1 }} /> : null}
+            Delete Forever
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Snackbar open={profileSnackbar} autoHideDuration={4000} onClose={() => setProfileSnackbar(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="success" onClose={() => setProfileSnackbar(false)}>Profile updated successfully</Alert>

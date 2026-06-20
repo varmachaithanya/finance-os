@@ -73,3 +73,5 @@ export const uploadAvatar = (file: File) => {
 };
 
 export const deleteAvatar = () => api.delete('/auth/me/avatar').then(r => r.data);
+
+export const deleteAccount = () => api.delete('/auth/me').then(r => r.data);
