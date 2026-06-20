@@ -51,9 +51,15 @@ export default function WelcomeModal({
 }: WelcomeModalProps) {
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const greetingRef = useRef(getGreeting());
+  const messageRef = useRef(getMotivationalMessage());
+  const nowRef = useRef(dayjs());
 
   useEffect(() => {
     if (open) {
+      greetingRef.current = getGreeting();
+      messageRef.current = getMotivationalMessage();
+      nowRef.current = dayjs();
       setProgress(0);
       timerRef.current = setInterval(() => {
         setProgress((prev) => {
@@ -71,9 +77,9 @@ export default function WelcomeModal({
     };
   }, [open, onClose]);
 
-  const greeting = getGreeting();
-  const message = getMotivationalMessage();
-  const now = dayjs();
+  const greeting = greetingRef.current;
+  const message = messageRef.current;
+  const now = nowRef.current;
 
   const fmt = (n: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);

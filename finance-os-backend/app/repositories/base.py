@@ -63,7 +63,7 @@ class BaseRepository(Generic[ModelType]):
         if instance is None:
             return None
         for key, value in kwargs.items():
-            if value is not None and hasattr(instance, key):
+            if hasattr(instance, key):
                 col = getattr(self.model, key)
                 if isinstance(value, str) and hasattr(col, 'type') and isinstance(col.type, types.Uuid):
                     value = uuid.UUID(value)

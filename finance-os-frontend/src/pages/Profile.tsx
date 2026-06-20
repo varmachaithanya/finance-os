@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Avatar, Box, Paper, Typography, TextField, Button, MenuItem,
   Snackbar, Alert, CircularProgress, Grid, IconButton,
@@ -68,6 +68,7 @@ interface WebAuthnCred {
 export default function Profile() {
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
+  const queryClient = useQueryClient();
   const [profileSnackbar, setProfileSnackbar] = useState(false);
   const [passwordSnackbar, setPasswordSnackbar] = useState(false);
   const [passwordError, setPasswordError] = useState('');
@@ -98,12 +99,14 @@ export default function Profile() {
   useEffect(() => {
     const target = fetchedUser || user;
     if (target) {
-      profileForm.setValue('full_name', target.full_name);
-      profileForm.setValue('phone', target.phone || '');
-      profileForm.setValue('currency', target.currency || 'INR');
-      profileForm.setValue('timezone', target.timezone || 'Asia/Kolkata');
+      profileForm.reset({
+        full_name: target.full_name,
+        phone: target.phone || '',
+        currency: target.currency || 'INR',
+        timezone: target.timezone || 'Asia/Kolkata',
+      });
     }
-  }, [fetchedUser, user, profileForm.setValue]);
+  }, [fetchedUser, user]);
 
   const passwordForm = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
@@ -124,6 +127,7 @@ export default function Profile() {
       }),
     onSuccess: (updatedUser) => {
       updateUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       setProfileSnackbar(true);
     },
   });
@@ -159,6 +163,7 @@ export default function Profile() {
     uploadAvatar(file)
       .then((updatedUser) => {
         updateUser(updatedUser);
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
         setAvatarSnackbar({ open: true, message: 'Avatar updated successfully', severity: 'success' });
         setAvatarPreview(null);
       })
@@ -174,6 +179,7 @@ export default function Profile() {
     try {
       const updatedUser = await deleteAvatar();
       updateUser(updatedUser);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       setAvatarSnackbar({ open: true, message: 'Avatar removed', severity: 'success' });
     } catch {
       setAvatarSnackbar({ open: true, message: 'Failed to delete avatar', severity: 'error' });

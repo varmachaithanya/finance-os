@@ -53,9 +53,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!summaryQuery.isLoading && !summaryQuery.error) {
-      if (!sessionStorage.getItem('welcome_shown')) {
-        setShowWelcome(true);
-      }
+      setShowWelcome(true);
     }
   });
 
@@ -216,7 +214,7 @@ export default function Dashboard() {
       </Grid>
       <WelcomeModal
         open={showWelcome}
-        onClose={() => { setShowWelcome(false); sessionStorage.setItem('welcome_shown', 'true'); }}
+        onClose={() => setShowWelcome(false)}
         userName={user?.full_name || 'User'}
         totalExpenses={s.total_expenses_month}
         totalIncome={s.total_income_month}
