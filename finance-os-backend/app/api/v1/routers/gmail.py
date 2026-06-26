@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text, create_engine
+from sqlalchemy.orm import sessionmaker
 from typing import Optional, List
 import os
 import json
@@ -11,6 +12,7 @@ import uuid
 from datetime import datetime, timedelta
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
+from app.core.config import settings
 import structlog
 
 logger = structlog.get_logger()
@@ -24,6 +26,13 @@ GOOGLE_REDIRECT_URI = os.getenv(
 )
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 GMAIL_SCOPES = "https://www.googleapis.com/auth/gmail.readonly"
+
+
+def _get_db_session():
+    """Create a fresh DB session outside FastAPI dependency injection."""
+    engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return SessionLocal()
 
 
 def get_gmail_service(user_id: str, db: Session):
@@ -186,13 +195,12 @@ def get_auth_url(
 
 
 @router.get("/callback")
-async def gmail_callback(
+def gmail_callback(
     code: str = Query(None),
     state: str = Query(None),
     error: str = Query(None),
-    db: Session = Depends(get_db)
 ):
-    """Handle Google OAuth callback."""
+    """Handle Google OAuth callback. Self-contained — no FastAPI dependency injection."""
     if error:
         logger.error(f"OAuth error: {error}")
         return RedirectResponse(
@@ -204,8 +212,9 @@ async def gmail_callback(
             url=f"{FRONTEND_URL}/gmail-import?error=missing_params"
         )
 
+    import httpx
+
     try:
-        import httpx
         token_response = httpx.post(
             "https://oauth2.googleapis.com/token",
             data={
@@ -221,69 +230,49 @@ async def gmail_callback(
         if "error" in token_data:
             logger.error(f"Token exchange error: {token_data}")
             return RedirectResponse(
-                url=f"{FRONTEND_URL}/gmail-import"
-                    f"?error=token_exchange_failed"
+                url=f"{FRONTEND_URL}/gmail-import?error=token_exchange_failed"
             )
 
         access_token = token_data.get("access_token")
-        refresh_token = token_data.get("refresh_token")
+        refresh_token = token_data.get("refresh_token", "")
         expires_in = token_data.get("expires_in", 3600)
-        token_expiry = datetime.utcnow() + timedelta(
-            seconds=expires_in
-        )
-
+        token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
         user_id = state
 
+        db = _get_db_session()
         try:
             existing = db.execute(
-                text("SELECT id FROM gmail_tokens "
-                     "WHERE user_id = :uid"),
+                text("SELECT id FROM gmail_tokens WHERE user_id = :uid"),
                 {"uid": user_id}
             ).fetchone()
 
             if existing:
                 db.execute(
-                    text("UPDATE gmail_tokens SET "
-                         "access_token = :at, "
-                         "refresh_token = :rt, "
-                         "token_expiry = :te, "
-                         "is_connected = TRUE, "
-                         "updated_at = NOW() "
+                    text("UPDATE gmail_tokens SET access_token = :at, "
+                         "refresh_token = :rt, token_expiry = :te, "
+                         "is_connected = TRUE, updated_at = NOW() "
                          "WHERE user_id = :uid"),
-                    {
-                        "at": access_token,
-                        "rt": refresh_token,
-                        "te": token_expiry,
-                        "uid": user_id
-                    }
+                    {"at": access_token, "rt": refresh_token,
+                     "te": token_expiry, "uid": user_id}
                 )
             else:
                 db.execute(
                     text("INSERT INTO gmail_tokens "
-                         "(id, user_id, access_token, "
-                         "refresh_token, token_expiry, "
-                         "is_connected, created_at, updated_at) "
-                         "VALUES (:id, :uid, :at, :rt, :te, "
-                         "TRUE, NOW(), NOW())"),
-                    {
-                        "id": str(uuid.uuid4()),
-                        "uid": user_id,
-                        "at": access_token,
-                        "rt": refresh_token,
-                        "te": token_expiry,
-                    }
+                         "(id, user_id, access_token, refresh_token, "
+                         "token_expiry, is_connected, created_at, updated_at) "
+                         "VALUES (:id, :uid, :at, :rt, :te, TRUE, NOW(), NOW())"),
+                    {"id": str(uuid.uuid4()), "uid": user_id,
+                     "at": access_token, "rt": refresh_token, "te": token_expiry}
                 )
             db.commit()
             logger.info(f"Gmail connected for user {user_id}")
-
-        except Exception as db_error:
-            logger.error(f"DB error saving token: {db_error}")
+        except Exception as db_err:
+            logger.error(f"DB error: {db_err}")
             db.rollback()
             db.execute(text("""
                 CREATE TABLE IF NOT EXISTS gmail_tokens (
                     id UUID PRIMARY KEY,
-                    user_id UUID REFERENCES users(id)
-                        ON DELETE CASCADE,
+                    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
                     access_token TEXT,
                     refresh_token TEXT,
                     token_expiry TIMESTAMP,
@@ -296,30 +285,21 @@ async def gmail_callback(
             db.commit()
             db.execute(
                 text("INSERT INTO gmail_tokens "
-                     "(id, user_id, access_token, "
-                     "refresh_token, token_expiry, "
-                     "is_connected, created_at, updated_at) "
-                     "VALUES (:id, :uid, :at, :rt, :te, "
-                     "TRUE, NOW(), NOW())"),
-                {
-                    "id": str(uuid.uuid4()),
-                    "uid": user_id,
-                    "at": access_token,
-                    "rt": refresh_token,
-                    "te": token_expiry,
-                }
+                     "(id, user_id, access_token, refresh_token, "
+                     "token_expiry, is_connected, created_at, updated_at) "
+                     "VALUES (:id, :uid, :at, :rt, :te, TRUE, NOW(), NOW())"),
+                {"id": str(uuid.uuid4()), "uid": user_id,
+                 "at": access_token, "rt": refresh_token, "te": token_expiry}
             )
             db.commit()
+        finally:
+            db.close()
 
-        return RedirectResponse(
-            url=f"{FRONTEND_URL}/gmail-import?connected=true"
-        )
+        return RedirectResponse(url=f"{FRONTEND_URL}/gmail-import?connected=true")
 
     except Exception as e:
         logger.error(f"Gmail callback error: {e}")
-        return RedirectResponse(
-            url=f"{FRONTEND_URL}/gmail-import?error=server_error"
-        )
+        return RedirectResponse(url=f"{FRONTEND_URL}/gmail-import?error=server_error")
 
 
 @router.get("/status")

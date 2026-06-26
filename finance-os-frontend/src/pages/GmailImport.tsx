@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Box, Paper, Typography, Button, Chip, Checkbox, Grid, Avatar, MenuItem, TextField,
-  Snackbar, Alert, CircularProgress, Skeleton, Select, FormControl,
+  Snackbar, Alert, CircularProgress, Skeleton, Select, FormControl, useTheme,
 } from '@mui/material';
 import PageHeader from '@/components/common/PageHeader';
 import { gmailService, GmailTransaction } from '@/services/gmailService';
@@ -17,6 +17,7 @@ const BANK_COLORS: Record<string, string> = {
 };
 
 export default function GmailImport() {
+  const theme = useTheme();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [days, setDays] = useState(30);
@@ -120,17 +121,17 @@ export default function GmailImport() {
 
       {/* Step 1: Connect */}
       {!status?.connected && (
-        <Paper sx={{ p: 4, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px', textAlign: 'center', maxWidth: 520, mx: 'auto' }}>
+        <Paper sx={{ p: 4, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', textAlign: 'center', maxWidth: 520, mx: 'auto' }}>
           <Typography variant="h3" mb={2}>📧</Typography>
-          <Typography variant="h6" fontWeight={600} mb={1} sx={{ color: '#F0F6FF' }}>
+          <Typography variant="h6" fontWeight={600} mb={1} sx={{ color: theme.palette.text.primary }}>
             Connect Gmail to Auto-Import Transactions
           </Typography>
-          <Typography sx={{ color: '#4A6080', fontSize: 14, mb: 3 }}>
+          <Typography sx={{ color: theme.palette.text.secondary, fontSize: 14, mb: 3 }}>
             We read only bank transaction emails. We never read personal emails. Read-only access.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap', mb: 3 }}>
             {['🔒 Read-only access', '🏦 Bank emails only', '🚫 No personal emails', '🔐 Google secured'].map(badge => (
-              <Chip key={badge} label={badge} sx={{ background: '#0B1120', color: '#4A6080', borderRadius: '8px' }} />
+              <Chip key={badge} label={badge} sx={{ background: theme.palette.action.hover, color: theme.palette.text.secondary, borderRadius: '8px' }} />
             ))}
           </Box>
           <Button
@@ -152,15 +153,15 @@ export default function GmailImport() {
 
       {/* Step 2: Fetch */}
       {status?.connected && !fetched && (
-        <Paper sx={{ p: 4, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px', maxWidth: 520, mx: 'auto' }}>
+        <Paper sx={{ p: 4, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', maxWidth: 520, mx: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
             <Chip label="Gmail Connected ✓" size="small" sx={{ background: '#00C9A720', color: '#00C9A7', fontWeight: 600 }} />
-            <Button onClick={handleDisconnect} sx={{ color: '#4A6080', textTransform: 'none', fontSize: 12, p: 0, minWidth: 'auto' }}>
+            <Button onClick={handleDisconnect} sx={{ color: theme.palette.text.secondary, textTransform: 'none', fontSize: 12, p: 0, minWidth: 'auto' }}>
               Disconnect
             </Button>
           </Box>
 
-          <Typography variant="body2" sx={{ color: '#4A6080', mb: 2 }}>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
             Connected as {user?.email || 'your Google account'}
           </Typography>
 
@@ -168,7 +169,7 @@ export default function GmailImport() {
             <Select
               value={days}
               onChange={(e) => setDays(e.target.value as number)}
-              sx={{ background: '#0B1120', color: '#F0F6FF', borderRadius: '10px' }}
+              sx={{ background: theme.palette.action.hover, color: theme.palette.text.primary, borderRadius: '10px' }}
             >
               {[7, 15, 30, 60].map(d => (
                 <MenuItem key={d} value={d}>Last {d} days</MenuItem>
@@ -204,15 +205,15 @@ export default function GmailImport() {
       {/* Step 3: Review */}
       {fetched && (
         <>
-          <Paper sx={{ p: 3, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px', mb: 2 }}>
+          <Paper sx={{ p: 3, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', mb: 2 }}>
             <Grid container spacing={3}>
               {transactions.map((txn) => (
                 <Grid item xs={12} key={txn.id}>
                   <Paper
                     sx={{
                       p: 2,
-                      background: selectedIds.has(txn.id) ? '#00C9A710' : '#0B1120',
-                      border: selectedIds.has(txn.id) ? '2px solid #00C9A7' : '1px solid #1E2D45',
+                      background: selectedIds.has(txn.id) ? '#00C9A710' : theme.palette.action.hover,
+                      border: selectedIds.has(txn.id) ? '2px solid #00C9A7' : `1px solid ${theme.palette.divider}`,
                       borderRadius: '12px',
                       display: 'flex', alignItems: 'center', gap: 2,
                       cursor: 'pointer',
@@ -220,15 +221,15 @@ export default function GmailImport() {
                     }}
                     onClick={() => toggleSelect(txn.id)}
                   >
-                    <Checkbox checked={selectedIds.has(txn.id)} sx={{ color: '#4A6080' }} />
-                    <Avatar sx={{ width: 36, height: 36, bgcolor: BANK_COLORS[txn.bank] || '#4A6080', fontSize: 14, fontWeight: 700 }}>
+                    <Checkbox checked={selectedIds.has(txn.id)} sx={{ color: theme.palette.text.secondary }} />
+                    <Avatar sx={{ width: 36, height: 36, bgcolor: BANK_COLORS[txn.bank] || theme.palette.text.secondary, fontSize: 14, fontWeight: 700 }}>
                       {txn.bank[0]}
                     </Avatar>
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                      <Typography sx={{ color: '#F0F6FF', fontWeight: 600, fontSize: 14 }} noWrap>
+                      <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: 14 }} noWrap>
                         {txn.merchant}
                       </Typography>
-                      <Typography sx={{ color: '#4A6080', fontSize: 12 }}>
+                      <Typography sx={{ color: theme.palette.text.secondary, fontSize: 12 }}>
                         {txn.date} · {txn.bank}
                       </Typography>
                     </Box>
@@ -258,8 +259,8 @@ export default function GmailImport() {
           <Paper
             sx={{
               p: 2,
-              background: '#111E33',
-              border: '1px solid #1E2D45',
+              background: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
               borderRadius: '16px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               position: 'sticky', bottom: 80,
@@ -270,9 +271,9 @@ export default function GmailImport() {
                 checked={selectedIds.size === transactions.length && transactions.length > 0}
                 indeterminate={selectedIds.size > 0 && selectedIds.size < transactions.length}
                 onChange={toggleSelectAll}
-                sx={{ color: '#4A6080' }}
+                sx={{ color: theme.palette.text.secondary }}
               />
-              <Typography sx={{ color: '#4A6080', fontSize: 13 }}>
+              <Typography sx={{ color: theme.palette.text.secondary, fontSize: 13 }}>
                 {selectedIds.size} of {transactions.length} selected
               </Typography>
             </Box>

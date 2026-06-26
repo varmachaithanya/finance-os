@@ -5,10 +5,10 @@ import {
   useMediaQuery, useTheme,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import MoneyOffIcon from '@mui/icons-material/MoneyOff';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import CreditCardIcon from '@mui/icons-material/CreditCard';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import SvgIcon from '@mui/material/SvgIcon';
 import CloseIcon from '@mui/icons-material/Close';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
@@ -16,22 +16,30 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useAuthStore } from '@/app/store';
 import { getUnreadCount } from '@/services/notificationService';
 
+function GmailIcon() {
+  return (
+    <SvgIcon viewBox="0 0 24 24">
+      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EA4335" />
+    </SvgIcon>
+  );
+}
+
 const NAV_ITEMS = [
   { label: 'Home', path: '/dashboard', icon: <DashboardIcon /> },
-  { label: 'Expenses', path: '/expenses', icon: <MoneyOffIcon /> },
+  { label: 'Gmail Import', path: '/gmail-import', icon: <GmailIcon /> },
   { label: 'Income', path: '/income', icon: <AttachMoneyIcon /> },
-  { label: 'Cards', path: '/credit-cards', icon: <CreditCardIcon /> },
+  { label: 'AI Insights', path: '/insights', icon: <SmartToyIcon /> },
   { label: 'More', path: null, icon: <MoreHorizIcon /> },
 ];
 
 const DRAWER_ITEMS = [
-  { label: 'Insights', path: '/insights', icon: '🤖', color: '#8B5CF6' },
+  { label: 'Expenses', path: '/expenses', icon: '💸', color: '#E24B4A' },
+  { label: 'Cards', path: '/credit-cards', icon: '💳', color: '#0EA5E9' },
   { label: 'Debts', path: '/debts', icon: '🏦', color: '#E24B4A' },
   { label: 'Subscriptions', path: '/subscriptions', icon: '🔄', color: '#0EA5E9' },
   { label: 'Budgets', path: '/budgets', icon: '📊', color: '#F59E0B' },
   { label: 'Reports', path: '/reports', icon: '📋', color: '#00C9A7' },
   { label: 'Notifications', path: '/notifications', icon: '🔔', color: '#8B5CF6' },
-  { label: 'Gmail Import', path: '/gmail-import', icon: '📧', color: '#EA4335' },
   { label: 'Profile', path: '/profile', icon: '👤', color: '#00C9A7' },
 ];
 

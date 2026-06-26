@@ -21,13 +21,21 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
     prev_month_end = month_start - timedelta(days=1)
     prev_month_start = prev_month_end.replace(day=1)
 
-    # Current month aggregates
-    cur_income = db.query(func.coalesce(func.sum(Income.amount), 0)).filter(
+    # All-time aggregates (for stat cards)
+    total_income_all = db.query(func.coalesce(func.sum(Income.amount), 0)).filter(
+        Income.user_id == user_id,
+    ).scalar()
+    total_expenses_all = db.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+        Expense.user_id == user_id,
+    ).scalar()
+
+    # Current month aggregates (for analysis)
+    month_income = db.query(func.coalesce(func.sum(Income.amount), 0)).filter(
         Income.user_id == user_id,
         Income.income_date >= month_start,
         Income.income_date <= today,
     ).scalar()
-    cur_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
+    month_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
         Expense.user_id == user_id,
         Expense.expense_date >= month_start,
         Expense.expense_date <= today,
@@ -45,8 +53,8 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
         Expense.expense_date <= prev_month_end,
     ).scalar()
 
-    cur_savings = float(cur_income) - float(cur_expenses)
-    cur_savings_rate = (cur_savings / float(cur_income) * 100) if float(cur_income) > 0 else 0
+    cur_savings = float(month_income) - float(month_expenses)
+    cur_savings_rate = (cur_savings / float(month_income) * 100) if float(month_income) > 0 else 0
 
     # Category breakdown (current month)
     cat_rows = db.query(
@@ -60,7 +68,7 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
         Category.type == "expense",
     ).group_by(Category.name, Category.color).all()
 
-    total_exp = float(cur_expenses) if float(cur_expenses) > 0 else 1
+    total_exp = float(month_expenses) if float(month_expenses) > 0 else 1
     categories = []
     for row in cat_rows:
         amt = float(row.amount)
@@ -223,7 +231,7 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
 
     # 3. Month over month comparison
     if float(prev_expenses) > 0:
-        mom_change = (float(cur_expenses) - float(prev_expenses)) / float(prev_expenses) * 100
+        mom_change = (float(month_expenses) - float(prev_expenses)) / float(prev_expenses) * 100
         if mom_change > 20:
             insights.append({
                 "type": "warning",
@@ -279,8 +287,8 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
     })
 
     return {
-        "total_income": float(cur_income),
-        "total_expenses": float(cur_expenses),
+        "total_income": float(total_income_all),
+        "total_expenses": float(total_expenses_all),
         "savings": cur_savings,
         "savings_rate": round(cur_savings_rate, 1),
         "categories": categories,
