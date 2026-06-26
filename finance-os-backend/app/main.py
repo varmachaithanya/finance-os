@@ -34,6 +34,27 @@ async def lifespan(app: FastAPI):
         logger.info("directories_ready", avatars_dir=str(settings.AVATARS_DIR), reports_dir=str(settings.REPORTS_DIR))
         from app.setup_db import init_db
         init_db()
+
+        from sqlalchemy import text as sa_text
+        from app.core.database import engine
+        with engine.connect() as conn:
+            conn.execute(sa_text("""
+                CREATE TABLE IF NOT EXISTS gmail_tokens (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    user_id UUID REFERENCES users(id)
+                        ON DELETE CASCADE,
+                    access_token TEXT,
+                    refresh_token TEXT,
+                    token_expiry TIMESTAMP,
+                    is_connected BOOLEAN DEFAULT TRUE,
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW(),
+                    UNIQUE(user_id)
+                )
+            """))
+            conn.commit()
+        logger.info("gmail_tokens table ready")
+
         init_scheduler()
         logger.info("database_initialized")
     except Exception as e:
@@ -99,4 +120,4 @@ app.include_router(reports.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(webauthn.router, prefix="/api/v1")
 app.include_router(insights.router, prefix="/api/v1")
-app.include_router(gmail.router, prefix="/api/v1")
+app.include_router(gmail.router, prefix="/api/v1/gmail", tags=["Gmail"])

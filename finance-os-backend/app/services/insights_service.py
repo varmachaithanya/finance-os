@@ -105,25 +105,29 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
 
     # Monthly trend last 6 months
     six_months_ago = month_start - timedelta(days=180)
+    inc_year = extract("year", Income.income_date)
+    inc_month = extract("month", Income.income_date)
     monthly_income_rows = db.query(
-        extract("year", Income.income_date).label("year"),
-        extract("month", Income.income_date).label("month"),
+        inc_year.label("year"),
+        inc_month.label("month"),
         func.coalesce(func.sum(Income.amount), 0).label("total"),
     ).filter(
         Income.user_id == user_id,
         Income.income_date >= six_months_ago,
         Income.income_date <= today,
-    ).group_by("year", "month").order_by("year", "month").all()
+    ).group_by(inc_year, inc_month).order_by(inc_year, inc_month).all()
 
+    exp_year = extract("year", Expense.expense_date)
+    exp_month = extract("month", Expense.expense_date)
     monthly_expense_rows = db.query(
-        extract("year", Expense.expense_date).label("year"),
-        extract("month", Expense.expense_date).label("month"),
+        exp_year.label("year"),
+        exp_month.label("month"),
         func.coalesce(func.sum(Expense.amount), 0).label("total"),
     ).filter(
         Expense.user_id == user_id,
         Expense.expense_date >= six_months_ago,
         Expense.expense_date <= today,
-    ).group_by("year", "month").order_by("year", "month").all()
+    ).group_by(exp_year, exp_month).order_by(exp_year, exp_month).all()
 
     income_map = {}
     for r in monthly_income_rows:
@@ -152,14 +156,15 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
         })
 
     # Top spending day of week
+    dow_col = func.extract("dow", Expense.expense_date)
     dow_rows = db.query(
-        func.strftime("%w", Expense.expense_date).label("dow"),
+        dow_col.label("dow"),
         func.coalesce(func.sum(Expense.amount), 0).label("total"),
     ).filter(
         Expense.user_id == user_id,
         Expense.expense_date >= thirty_ago,
         Expense.expense_date <= today,
-    ).group_by("dow").all()
+    ).group_by(dow_col).all()
 
     dow_names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
     top_dow = "N/A"
