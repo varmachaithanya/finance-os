@@ -18,12 +18,9 @@ import structlog
 logger = structlog.get_logger()
 router = APIRouter()
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
-GOOGLE_REDIRECT_URI = os.getenv(
-    "GOOGLE_REDIRECT_URI",
-    "https://financeos-api.up.railway.app/api/v1/gmail/callback"
-)
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+GOOGLE_REDIRECT_URI = settings.GOOGLE_REDIRECT_URI
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 GMAIL_SCOPES = "https://www.googleapis.com/auth/gmail.readonly"
 
@@ -191,6 +188,12 @@ def get_auth_url(
         f"&prompt=consent"
         f"&state={state}"
     )
+    logger.info(
+        "Gmail OAuth URL generated",
+        redirect_uri=GOOGLE_REDIRECT_URI,
+        client_id_prefix=GOOGLE_CLIENT_ID[:8] if GOOGLE_CLIENT_ID else "NOT_SET",
+        frontend_url=FRONTEND_URL,
+    )
     return {"auth_url": auth_url}
 
 
@@ -201,6 +204,13 @@ def gmail_callback(
     error: str = Query(None),
 ):
     """Handle Google OAuth callback. Self-contained — no FastAPI dependency injection."""
+    logger.info(
+        "Gmail callback received",
+        state=state,
+        has_code=bool(code),
+        has_error=bool(error),
+        redirect_uri=GOOGLE_REDIRECT_URI,
+    )
     if error:
         logger.error(f"OAuth error: {error}")
         return RedirectResponse(
@@ -215,6 +225,10 @@ def gmail_callback(
     import httpx
 
     try:
+        logger.info(
+            "Exchanging Gmail authorization code for tokens",
+            redirect_uri=GOOGLE_REDIRECT_URI,
+        )
         token_response = httpx.post(
             "https://oauth2.googleapis.com/token",
             data={

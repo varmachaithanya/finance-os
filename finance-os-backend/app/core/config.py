@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
     GOOGLE_REDIRECT_URI: str = os.getenv(
         "GOOGLE_REDIRECT_URI",
-        "https://financeos-api.up.railway.app/api/v1/gmail/callback"
+        "https://financeos-api-production-8d74.up.railway.app/api/v1/gmail/callback"
     )
 
     # Alternate email config style (same as SMTP_* above, for compatibility)
