@@ -5,9 +5,10 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  icon?: string;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions, icon }) => {
   return (
     <Box
       sx={{
@@ -21,7 +22,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subtitle, actions }) => 
     >
       <Box>
         <Typography variant="h4" fontWeight={700}>
-          {title}
+          {icon ? `${icon} ` : ''}{title}
         </Typography>
         {subtitle && (
           <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>

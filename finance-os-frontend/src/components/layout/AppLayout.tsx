@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import BottomNav from './BottomNav';
 
 const DRAWER_WIDTH = 240;
 
 const AppLayout: React.FC = () => {
+  const theme = useTheme();
+  const isMdUp = useMediaQuery(theme.breakpoints.up('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -26,10 +29,12 @@ const AppLayout: React.FC = () => {
         sx={{
           flexGrow: 1,
           mt: 8,
+          ml: { md: `${DRAWER_WIDTH}px` },
           transition: 'margin-left 0.3s ease',
           minWidth: 0,
           overflowX: 'hidden',
           overflowY: 'auto',
+          pb: { xs: '80px', md: 0 },
         }}
       >
         <Box
@@ -43,6 +48,7 @@ const AppLayout: React.FC = () => {
           <Outlet />
         </Box>
       </Box>
+      <BottomNav />
     </Box>
   );
 };

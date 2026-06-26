@@ -88,7 +88,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
           color="inherit"
           aria-label="menu"
           onClick={onMenuClick}
-          sx={{ mr: 2, display: { md: 'none' } }}
+          sx={{ mr: 2, display: { xs: 'none', md: 'none' } }}
         >
           <MenuIcon />
         </IconButton>

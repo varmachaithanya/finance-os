@@ -9,6 +9,7 @@ from app.models.subscription import Subscription
 from app.models.budget import Budget
 from app.models.notification import Notification
 from app.models.webauthn import WebAuthnCredential, WebAuthnChallenge
+from app.models.gmail_token import GmailToken
 
 __all__ = [
     "Base",
@@ -23,4 +24,5 @@ __all__ = [
     "Notification",
     "WebAuthnCredential",
     "WebAuthnChallenge",
+    "GmailToken",
 ]

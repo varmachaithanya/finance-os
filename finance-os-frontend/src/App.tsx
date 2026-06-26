@@ -18,6 +18,9 @@ const Budgets = lazy(() => import('./pages/Budgets'));
 const Reports = lazy(() => import('./pages/Reports'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Insights = lazy(() => import('./pages/Insights'));
+const GmailImport = lazy(() => import('./pages/GmailImport'));
+const GmailSuccess = lazy(() => import('./pages/GmailSuccess'));
 
 const LazyLoad = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>}>
@@ -60,6 +63,9 @@ const App = () => {
           <Route path="/reports" element={<LazyLoad><Reports /></LazyLoad>} />
           <Route path="/notifications" element={<LazyLoad><Notifications /></LazyLoad>} />
           <Route path="/profile" element={<LazyLoad><Profile /></LazyLoad>} />
+          <Route path="/insights" element={<LazyLoad><Insights /></LazyLoad>} />
+          <Route path="/gmail-import" element={<LazyLoad><GmailImport /></LazyLoad>} />
+          <Route path="/gmail-success" element={<LazyLoad><GmailSuccess /></LazyLoad>} />
         </Route>
       </Route>
 

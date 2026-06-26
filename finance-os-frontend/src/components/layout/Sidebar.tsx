@@ -23,6 +23,8 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
 
 interface NavItem {
   label: string;
@@ -32,6 +34,7 @@ interface NavItem {
 
 const mainLinks: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+  { label: 'Insights', path: '/insights', icon: <SmartToyIcon /> },
   { label: 'Expenses', path: '/expenses', icon: <MoneyOffIcon /> },
   { label: 'Income', path: '/income', icon: <AttachMoneyIcon /> },
   { label: 'Credit Cards', path: '/credit-cards', icon: <CreditCardIcon /> },
@@ -39,6 +42,7 @@ const mainLinks: NavItem[] = [
   { label: 'Subscriptions', path: '/subscriptions', icon: <RepeatIcon /> },
   { label: 'Budgets', path: '/budgets', icon: <AccountBalanceWalletIcon /> },
   { label: 'Reports', path: '/reports', icon: <AssessmentIcon /> },
+  { label: 'Gmail Import', path: '/gmail-import', icon: <MailOutlineIcon /> },
 ];
 
 const bottomLinks: NavItem[] = [
