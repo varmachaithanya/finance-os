@@ -5,7 +5,7 @@ import {
   useMediaQuery, useTheme,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import MoneyOffIcon from '@mui/icons-material/MoneyOff';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -27,13 +27,14 @@ function GmailIcon() {
 const NAV_ITEMS = [
   { label: 'Home', path: '/dashboard', icon: <DashboardIcon /> },
   { label: 'Gmail Import', path: '/gmail-import', icon: <GmailIcon /> },
-  { label: 'Income', path: '/income', icon: <AttachMoneyIcon /> },
+  { label: 'Expenses', path: '/expenses', icon: <MoneyOffIcon /> },
   { label: 'AI Insights', path: '/insights', icon: <SmartToyIcon /> },
   { label: 'More', path: null, icon: <MoreHorizIcon /> },
 ];
 
 const DRAWER_ITEMS = [
   { label: 'Expenses', path: '/expenses', icon: '💸', color: '#E24B4A' },
+  { label: 'Income', path: '/income', icon: '💰', color: '#00C9A7' },
   { label: 'Cards', path: '/credit-cards', icon: '💳', color: '#0EA5E9' },
   { label: 'Debts', path: '/debts', icon: '🏦', color: '#E24B4A' },
   { label: 'Subscriptions', path: '/subscriptions', icon: '🔄', color: '#0EA5E9' },
@@ -80,8 +81,8 @@ export default function BottomNav() {
           left: 0,
           right: 0,
           height: 64,
-          background: '#111E33',
-          borderTop: '1px solid #1E2D45',
+          background: theme.palette.background.paper,
+          borderTop: `1px solid ${theme.palette.divider}`,
           borderRadius: '20px 20px 0 0',
           display: { xs: 'flex', md: 'none' },
           alignItems: 'center',
@@ -111,7 +112,7 @@ export default function BottomNav() {
                 cursor: 'pointer',
                 position: 'relative',
                 borderRadius: '12px',
-                background: isActive ? '#00C9A720' : 'transparent',
+                background: isActive ? `${theme.palette.primary.main}20` : 'transparent',
                 minWidth: 56,
                 transition: 'all 0.2s',
               }}
@@ -120,7 +121,7 @@ export default function BottomNav() {
                 <Box sx={{
                   position: 'absolute', top: 2,
                   width: 4, height: 4, borderRadius: '50%',
-                  background: '#00C9A7',
+                  background: theme.palette.primary.main,
                 }} />
               )}
               {isMore && unreadCount > 0 ? (
@@ -128,14 +129,14 @@ export default function BottomNav() {
                   {item.icon}
                 </Badge>
               ) : (
-                <Box sx={{ color: isActive ? '#00C9A7' : '#4A6080', display: 'flex' }}>
+                <Box sx={{ color: isActive ? theme.palette.primary.main : theme.palette.text.secondary, display: 'flex' }}>
                   {item.icon}
                 </Box>
               )}
               <Typography sx={{
                 fontSize: 10,
                 fontWeight: 600,
-                color: isActive ? '#00C9A7' : '#4A6080',
+                color: isActive ? theme.palette.primary.main : theme.palette.text.secondary,
               }}>
                 {item.label}
               </Typography>
@@ -151,7 +152,7 @@ export default function BottomNav() {
         onClose={() => setDrawerOpen(false)}
         PaperProps={{
           sx: {
-            background: '#111E33',
+            background: theme.palette.background.paper,
             borderTopLeftRadius: '20px',
             borderTopRightRadius: '20px',
             maxHeight: '85vh',
@@ -161,7 +162,7 @@ export default function BottomNav() {
         <Box sx={{ p: 2, pb: 'env(safe-area-inset-bottom)' }}>
           {/* Handle bar */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Box sx={{ width: 40, height: 4, borderRadius: 2, background: '#4A6080' }} />
+            <Box sx={{ width: 40, height: 4, borderRadius: 2, background: theme.palette.text.secondary }} />
           </Box>
 
           {/* Header */}
@@ -171,28 +172,28 @@ export default function BottomNav() {
                 src={user?.avatar_url ? `${import.meta.env.VITE_API_BASE_URL || '/api/v1'}${user.avatar_url}` : undefined}
                 sx={{
                   width: 44, height: 44,
-                  background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   fontWeight: 700,
                 }}
               >
                 {initials}
               </Avatar>
               <Box>
-                <Typography sx={{ color: '#F0F6FF', fontWeight: 600, fontSize: 15 }}>
+                <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: 15 }}>
                   {user?.full_name || 'User'}
                 </Typography>
-                <Typography sx={{ color: '#4A6080', fontSize: 12 }}>
+                <Typography sx={{ color: theme.palette.text.secondary, fontSize: 12 }}>
                   {user?.email || ''}
                 </Typography>
               </Box>
             </Box>
-            <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: '#4A6080' }}>
+            <IconButton onClick={() => setDrawerOpen(false)} sx={{ color: theme.palette.text.secondary }}>
               <CloseIcon />
             </IconButton>
           </Box>
 
           {/* Divider */}
-          <Divider sx={{ borderColor: '#1E2D45', mb: 2 }} />
+          <Divider sx={{ borderColor: theme.palette.divider, mb: 2 }} />
 
           {/* Navigation grid */}
           <Grid container spacing={1.5}>
@@ -204,8 +205,8 @@ export default function BottomNav() {
                     navigate(item.path);
                   }}
                   sx={{
-                    background: '#0B1120',
-                    border: '1px solid #1E2D45',
+                    background: theme.palette.background.default,
+                    border: `1px solid ${theme.palette.divider}`,
                     borderRadius: '14px',
                     p: 2,
                     textAlign: 'center',
@@ -225,7 +226,7 @@ export default function BottomNav() {
                   >
                     {item.icon}
                   </Box>
-                  <Typography sx={{ color: '#F0F6FF', fontSize: 11, fontWeight: 500 }} noWrap>
+                  <Typography sx={{ color: theme.palette.text.primary, fontSize: 11, fontWeight: 500 }} noWrap>
                     {item.label}
                   </Typography>
                 </Box>
@@ -234,12 +235,12 @@ export default function BottomNav() {
           </Grid>
 
           {/* Logout */}
-          <Divider sx={{ borderColor: '#1E2D45', my: 2 }} />
+          <Divider sx={{ borderColor: theme.palette.divider, my: 2 }} />
           <Button
             fullWidth
             startIcon={<LogoutIcon />}
             onClick={() => { setDrawerOpen(false); logout(); navigate('/login', { replace: true }); }}
-            sx={{ color: '#4A6080', textTransform: 'none', justifyContent: 'flex-start', borderRadius: '10px' }}
+            sx={{ color: theme.palette.text.secondary, textTransform: 'none', justifyContent: 'flex-start', borderRadius: '10px' }}
           >
             Logout
           </Button>

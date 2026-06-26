@@ -78,40 +78,6 @@ def get_gmail_service(user_id: str, db: Session):
         return None
 
 
-def parse_amount(text_content: str) -> Optional[float]:
-    """Extract amount from email text."""
-    patterns = [
-        r'Rs\.?\s*([0-9,]+(?:\.[0-9]{2})?)',
-        r'INR\s*([0-9,]+(?:\.[0-9]{2})?)',
-        r'\u20b9\s*([0-9,]+(?:\.[0-9]{2})?)',
-        r'([0-9,]+(?:\.[0-9]{2})?)\s*(?:Rs|INR|\u20b9)',
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, text_content, re.IGNORECASE)
-        if match:
-            amount_str = match.group(1).replace(',', '')
-            try:
-                return float(amount_str)
-            except ValueError:
-                continue
-    return None
-
-
-def parse_merchant(text_content: str) -> str:
-    """Extract merchant name from email."""
-    patterns = [
-        r'(?:at|to|for|merchant[:\s]+)([A-Z][A-Za-z0-9\s&\-\.]+?)(?:\s+on|\s+via|\s+for|\.|,|$)',
-        r'(?:paid to|sent to|transfer to)\s+([A-Z][A-Za-z0-9\s]+?)(?:\s+on|\.|,|$)',
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, text_content)
-        if match:
-            merchant = match.group(1).strip()
-            if len(merchant) > 2:
-                return merchant[:50]
-    return "Unknown"
-
-
 def get_transaction_type(text_content: str) -> str:
     """Determine if transaction is debit or credit."""
     text_lower = text_content.lower()
@@ -163,6 +129,66 @@ def suggest_category(merchant: str, text_content: str) -> str:
         if any(kw in combined for kw in keywords):
             return category
     return 'Other'
+
+
+def extract_email_body(payload: dict) -> str:
+    """Recursively extract text from Gmail message payload."""
+    mime_type = payload.get('mimeType', '')
+    body_data = payload.get('body', {}).get('data', '')
+
+    if mime_type == 'text/plain' and body_data:
+        return base64.urlsafe_b64decode(body_data).decode('utf-8', errors='ignore')
+
+    if mime_type == 'text/html' and body_data:
+        html = base64.urlsafe_b64decode(body_data).decode('utf-8', errors='ignore')
+        return re.sub(r'<[^>]+>', ' ', html)
+
+    parts = payload.get('parts', [])
+    for part in parts:
+        result = extract_email_body(part)
+        if result:
+            return result
+
+    return ''
+
+
+def parse_amount(text_content: str) -> Optional[float]:
+    """Extract amount from email text - supports Indian financial formats."""
+    patterns = [
+        r'(?:Rs|INR|₹)\s*([0-9,]+(?:\.[0-9]{2})?)',
+        r'([0-9,]+(?:\.[0-9]{2})?)\s*(?:Rs|INR|₹)',
+        r'(?:amount|amt|value|total)\s*(?:Rs|INR|₹)?\s*([0-9,]+(?:\.[0-9]{1,2})?)',
+        r'(?:Rs|INR|₹)\s*([0-9]+)',
+    ]
+    for pattern in patterns:
+        for match in re.finditer(pattern, text_content, re.IGNORECASE):
+            amount_str = match.group(1).replace(',', '')
+            try:
+                val = float(amount_str)
+                if 1 <= val <= 9999999:
+                    return val
+            except ValueError:
+                continue
+    return None
+
+
+def parse_merchant(text_content: str) -> str:
+    """Extract merchant name from email."""
+    patterns = [
+        r'(?:at|to|for|merchant[:\s]+)([A-Z][A-Za-z0-9\s&\-\.]+?)(?:\s+on|\s+via|\s+for|\.|,|\||$)',
+        r'(?:paid to|sent to|transfer to)\s+([A-Z][A-Za-z0-9\s]+?)(?:\s+on|\.|,|\||$)',
+        r'(?:merchant|vendor|payee)[:\s]+([A-Za-z0-9\s&\-\.]+?)(?:\s+on|\s+via|\s+for|\.|,|\||$)',
+        r'(?:to\s+)([A-Z][A-Za-z0-9\s]+?)(?:\s+(?:on|via|for|ref|date)|\.|,|\||$)',
+        r'(?:VPA[:\s]+)([a-zA-Z0-9.\-_]+@[a-zA-Z]+)',
+        r'(?:from\s+)([A-Z][A-Za-z0-9\s]+?)(?:\s+(?:on|via|for|ref|date)|\.|,|\||$)',
+        r'(?:paid\s+to\s+)([A-Z][A-Za-z0-9\s]+?)$',
+    ]
+    for pattern in patterns:
+        for match in re.finditer(pattern, text_content, re.IGNORECASE):
+            merchant = match.group(1).strip()
+            if len(merchant) > 2:
+                return merchant[:60]
+    return "Unknown"
 
 
 @router.get("/auth-url")
@@ -346,7 +372,7 @@ def fetch_transactions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Fetch bank transaction emails from Gmail."""
+    """Fetch bank transaction emails from Gmail with full pagination and robust parsing."""
     try:
         service = get_gmail_service(
             str(current_user.id), db
@@ -358,28 +384,68 @@ def fetch_transactions(
                        "Please connect Gmail first."
             )
 
+        BROAD_SENDERS = " OR ".join([
+            "from:alerts", "from:noreply", "from:statement", "from:notification",
+            "from:payments", "from:transaction", "from:banking", "from:service",
+            "from:alerts@hdfcbank.net", "from:alerts@icicibank.com",
+            "from:alert@sbi.co.in", "from:alerts@axisbank.com",
+            "from:kotak", "from:paytm", "from:phonepe", "from:google",
+            "from:amazon", "from:flipkart", "from:swiggy", "from:zomato",
+        ])
+
         query = (
-            f"(subject:debited OR subject:credited OR "
+            f"({BROAD_SENDERS} OR "
+            f"subject:debited OR subject:credited OR "
             f"subject:transaction OR subject:payment OR "
-            f"subject:spent OR subject:UPI OR subject:NEFT "
-            f"OR subject:IMPS OR subject:alert "
-            f"OR from:alerts@hdfcbank.net "
-            f"OR from:alerts@icicibank.com "
-            f"OR from:sbi.co.in "
-            f"OR from:axisbank.com) "
+            f"subject:spent OR subject:received OR "
+            f"subject:purchase OR subject:withdrawal OR "
+            f"subject:transfer OR subject:sent OR "
+            f"subject:refund OR subject:cashback OR "
+            f"subject:UPI OR subject:NEFT OR subject:IMPS OR "
+            f"subject:alert OR subject:paid OR "
+            f"subject:recharge OR subject:bill) "
             f"newer_than:{days}d"
         )
 
-        results = service.users().messages().list(
-            userId='me',
-            q=query,
-            maxResults=50
-        ).execute()
+        logger.info("Fetching Gmail messages", query=query, days=days)
 
-        messages = results.get('messages', [])
+        # ---- Paginated fetch ----
+        all_messages = []
+        page_token = None
+        page_num = 0
+        while True:
+            page_num += 1
+            result = service.users().messages().list(
+                userId='me',
+                q=query,
+                maxResults=500,
+                pageToken=page_token,
+            ).execute()
+
+            batch = result.get('messages', [])
+            all_messages.extend(batch)
+
+            page_token = result.get('nextPageToken')
+            logger.info(
+                "Gmail page fetched",
+                page=page_num, batch_size=len(batch),
+                total_so_far=len(all_messages),
+                has_next_page=page_token is not None,
+            )
+
+            if not page_token:
+                break
+
+        total_found = len(all_messages)
+        logger.info("Gmail fetch complete", total_messages_found=total_found)
+
+        # ---- Process each message ----
         transactions = []
+        skipped_no_amount = 0
+        skipped_error = 0
+        parsed_ok = 0
 
-        for msg in messages:
+        for msg in all_messages:
             try:
                 message = service.users().messages().get(
                     userId='me',
@@ -395,28 +461,12 @@ def fetch_transactions(
                 date_str = headers.get('Date', '')
                 sender = headers.get('From', '')
 
-                body = ''
-                payload = message['payload']
-                if 'parts' in payload:
-                    for part in payload['parts']:
-                        if part['mimeType'] == 'text/plain':
-                            data = part['body'].get('data', '')
-                            if data:
-                                body = base64.urlsafe_b64decode(
-                                    data
-                                ).decode('utf-8', errors='ignore')
-                                break
-                elif 'body' in payload:
-                    data = payload['body'].get('data', '')
-                    if data:
-                        body = base64.urlsafe_b64decode(
-                            data
-                        ).decode('utf-8', errors='ignore')
-
-                full_text = f"{subject} {body}"
+                body = extract_email_body(message['payload'])
+                full_text = f"{subject}\n{body}"
                 amount = parse_amount(full_text)
 
                 if not amount or amount <= 0:
+                    skipped_no_amount += 1
                     continue
 
                 merchant = parse_merchant(full_text)
@@ -428,26 +478,43 @@ def fetch_transactions(
                     parsed_date = parsedate_to_datetime(date_str)
                     expense_date = parsed_date.strftime('%Y-%m-%d')
                 except Exception:
-                    expense_date = datetime.now().strftime(
-                        '%Y-%m-%d'
-                    )
+                    expense_date = datetime.now().strftime('%Y-%m-%d')
 
+                # Enhanced bank detection
+                sender_lower = sender.lower()
                 bank = 'Unknown Bank'
-                if 'hdfc' in sender.lower():
+                if 'hdfc' in sender_lower:
                     bank = 'HDFC Bank'
-                elif 'icici' in sender.lower():
+                elif 'icici' in sender_lower:
                     bank = 'ICICI Bank'
-                elif 'sbi' in sender.lower():
+                elif 'sbi' in sender_lower:
                     bank = 'State Bank of India'
-                elif 'axis' in sender.lower():
+                elif 'axis' in sender_lower:
                     bank = 'Axis Bank'
-                elif 'kotak' in sender.lower():
+                elif 'kotak' in sender_lower:
                     bank = 'Kotak Bank'
-                elif 'paytm' in sender.lower():
+                elif 'idfc' in sender_lower:
+                    bank = 'IDFC Bank'
+                elif 'federal' in sender_lower:
+                    bank = 'Federal Bank'
+                elif 'canara' in sender_lower:
+                    bank = 'Canara Bank'
+                elif 'unionbank' in sender_lower:
+                    bank = 'Union Bank'
+                elif 'yesbank' in sender_lower:
+                    bank = 'Yes Bank'
+                elif 'paytm' in sender_lower:
                     bank = 'Paytm'
-                elif 'gpay' in sender.lower() or \
-                     'google' in sender.lower():
+                elif 'phonepe' in sender_lower or 'phone pe' in sender_lower:
+                    bank = 'PhonePe'
+                elif 'gpay' in sender_lower or 'google pay' in sender_lower or 'google' in sender_lower:
                     bank = 'Google Pay'
+                elif 'amazon' in sender_lower:
+                    bank = 'Amazon Pay'
+                elif 'swiggy' in sender_lower:
+                    bank = 'Swiggy'
+                elif 'zomato' in sender_lower:
+                    bank = 'Zomato'
 
                 transactions.append({
                     'id': msg['id'],
@@ -457,31 +524,43 @@ def fetch_transactions(
                     'date': expense_date,
                     'bank': bank,
                     'suggested_category': category,
-                    'raw_subject': subject[:100],
-                    'raw_snippet': message.get(
-                        'snippet', ''
-                    )[:150],
+                    'payment_method': 'upi',
+                    'raw_subject': subject[:150] if subject else '',
+                    'raw_snippet': message.get('snippet', '')[:200],
                     'selected': False,
                 })
+                parsed_ok += 1
 
             except Exception as e:
-                logger.warning(f"Error parsing email: {e}")
+                logger.warning("Error parsing individual email", error=str(e), msg_id=msg.get('id'))
+                skipped_error += 1
                 continue
 
-        transactions.sort(
-            key=lambda x: x['date'], reverse=True
+        transactions.sort(key=lambda x: x['date'], reverse=True)
+
+        logger.info(
+            "Transaction extraction summary",
+            total_found=total_found,
+            parsed_ok=parsed_ok,
+            skipped_no_amount=skipped_no_amount,
+            skipped_error=skipped_error,
+            total_returned=len(transactions),
         )
 
         return {
             "transactions": transactions,
             "total": len(transactions),
+            "total_found": total_found,
+            "parsed_ok": parsed_ok,
+            "skipped_no_amount": skipped_no_amount,
+            "skipped_error": skipped_error,
             "days_searched": days,
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Fetch transactions error: {e}")
+        logger.error("Fetch transactions error", error=str(e))
         raise HTTPException(
             status_code=500,
             detail=f"Failed to fetch transactions: {str(e)}"
@@ -494,13 +573,42 @@ def import_transactions(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Import selected transactions as expenses."""
+    """Import selected transactions as expenses with duplicate detection."""
     transactions = payload.get('transactions', [])
     imported = 0
+    duplicates = 0
     failed = 0
 
     for txn in transactions:
         try:
+            amount = float(txn.get('amount', 0))
+            expense_date = txn.get(
+                'date', datetime.now().strftime('%Y-%m-%d')
+            )
+            description = txn.get('merchant', 'Gmail Import')[:500]
+            suggested_category = txn.get(
+                'suggested_category', 'Other'
+            )
+
+            existing = db.execute(
+                text("SELECT id FROM expenses "
+                     "WHERE user_id = :uid "
+                     "AND amount = :amt "
+                     "AND expense_date = :date "
+                     "AND description = :desc "
+                     "LIMIT 1"),
+                {
+                    "uid": str(current_user.id),
+                    "amt": amount,
+                    "date": expense_date,
+                    "desc": description,
+                }
+            ).fetchone()
+
+            if existing:
+                duplicates += 1
+                continue
+
             category_result = db.execute(
                 text("SELECT id FROM categories "
                      "WHERE name = :name "
@@ -529,18 +637,11 @@ def import_transactions(
                     "id": str(uuid.uuid4()),
                     "uid": str(current_user.id),
                     "cid": category_id,
-                    "amt": float(txn.get('amount', 0)),
-                    "desc": txn.get(
-                        'merchant', 'Gmail Import'
-                    )[:500],
+                    "amt": amount,
+                    "desc": description,
                     "pm": txn.get('payment_method', 'upi'),
-                    "date": txn.get(
-                        'date',
-                        datetime.now().strftime('%Y-%m-%d')
-                    ),
-                    "ai_cat": txn.get(
-                        'suggested_category', 'Other'
-                    ),
+                    "date": expense_date,
+                    "ai_cat": suggested_category,
                 }
             )
             imported += 1
@@ -550,11 +651,22 @@ def import_transactions(
             failed += 1
 
     db.commit()
+
+    logger.info(
+        "Import complete",
+        total_attempted=len(transactions),
+        imported=imported,
+        duplicates=duplicates,
+        failed=failed,
+    )
+
     return {
         "imported_count": imported,
+        "duplicate_count": duplicates,
         "failed_count": failed,
-        "message": f"Successfully imported "
-                   f"{imported} expenses"
+        "message": f"Imported {imported} expenses"
+                   + (f", {duplicates} duplicates skipped" if duplicates else "")
+                   + (f", {failed} failed" if failed else ""),
     }
 
 

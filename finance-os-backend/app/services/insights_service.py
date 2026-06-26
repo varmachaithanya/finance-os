@@ -20,6 +20,10 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
     month_start = today.replace(day=1)
     prev_month_end = month_start - timedelta(days=1)
     prev_month_start = prev_month_end.replace(day=1)
+    if month_start.month == 12:
+        next_month_start = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        next_month_start = month_start.replace(month=month_start.month + 1)
 
     # All-time aggregates (for stat cards)
     total_income_all = db.query(func.coalesce(func.sum(Income.amount), 0)).filter(
@@ -29,16 +33,16 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
         Expense.user_id == user_id,
     ).scalar()
 
-    # Current month aggregates (for analysis)
+    # Current month aggregates (for analysis) — entire month, not just up to today
     month_income = db.query(func.coalesce(func.sum(Income.amount), 0)).filter(
         Income.user_id == user_id,
         Income.income_date >= month_start,
-        Income.income_date <= today,
+        Income.income_date < next_month_start,
     ).scalar()
     month_expenses = db.query(func.coalesce(func.sum(Expense.amount), 0)).filter(
         Expense.user_id == user_id,
         Expense.expense_date >= month_start,
-        Expense.expense_date <= today,
+        Expense.expense_date < next_month_start,
     ).scalar()
 
     # Previous month aggregates
@@ -64,7 +68,7 @@ def generate_insights(user_id: str, db: Session) -> dict[str, Any]:
     ).join(Expense, Expense.category_id == Category.id).filter(
         Expense.user_id == user_id,
         Expense.expense_date >= month_start,
-        Expense.expense_date <= today,
+        Expense.expense_date < next_month_start,
         Category.type == "expense",
     ).group_by(Category.name, Category.color).all()
 
