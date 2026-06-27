@@ -158,13 +158,13 @@ def chat_recommendation_count(
 
 @router.get("/health", summary="AI health and diagnostics", response_model=AIHealthResponse)
 def ai_health() -> AIHealthResponse:
-    from app.services.provider_factory import get_gemini_diagnostics
-    diag = get_gemini_diagnostics()
+    from app.services.provider_factory import get_groq_diagnostics
+    diag = get_groq_diagnostics()
     return AIHealthResponse(
         model=diag["model"],
         api_key_loaded=diag["api_key_loaded"],
         api_key_prefix=diag["api_key_prefix"],
-        gemini_connectivity=diag["gemini_connectivity"],
+        connectivity=diag["connectivity"],
         fallback_active=diag["fallback_active"],
         provider=diag["provider"],
         quota_exceeded=diag["quota_exceeded"],

@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Union
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
+from app.core.config import settings
 from app.models.expense import Expense
 from app.models.income import Income
 from app.models.debt import Debt
@@ -539,28 +540,28 @@ class FinancialAssistantService:
         result = None
 
         try:
-            if self.provider_name == "gemini":
-                logger.info("using_gemini")
+            if self.provider_name == "groq":
+                logger.info("using_groq")
                 result = self.provider.ask(message, user_id, self.db)
                 if "error" in result and result["error"]:
-                    raise Exception(result.get("error_message", "Gemini returned an error"))
+                    raise Exception(result.get("error_message", "Groq returned an error"))
             else:
                 logger.info("using_rule_based_provider")
                 result = self.provider.ask(message, user_id, self.db)
         except Exception as e:
             error_str = str(e)
-            logger.warning("gemini_failed_switching_to_rule_based_provider",
+            logger.warning("groq_failed_switching_to_rule_based_provider",
                            user_id=str(user_id),
                            error=error_str)
 
-            if "429" in error_str or "Quota" in error_str or "quota" in error_str:
-                logger.warning("gemini_quota_fallback",
+            if "429" in error_str or "rate limit" in error_str.lower():
+                logger.warning("groq_rate_limit_fallback",
                                user_id=str(user_id),
-                               model="gemini-2.0-flash",
+                               model=settings.AI_MODEL,
                                error=error_str)
 
             result = self._rule_provider.ask(message, user_id, self.db)
-            provider_used = "gemini_fallback"
+            provider_used = "groq_fallback"
 
         if result is None:
             logger.info("using_rule_based_provider_emergency")

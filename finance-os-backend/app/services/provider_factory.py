@@ -4,45 +4,45 @@ from typing import Optional, Union
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.services.financial_assistant_service import AIProvider, RuleBasedProvider
-from app.services.gemini_provider import GeminiProvider, GeminiQuotaError, GeminiAPIError
+from app.services.groq_provider import GroqProvider, GroqRateLimitError, GroqAPIError
 from app.services.financial_context_service import FinancialContextService
 
 logger = structlog.get_logger()
 
 
 class ProviderFactory:
-    _gemini_instance: Optional[GeminiProvider] = None
+    _groq_instance: Optional[GroqProvider] = None
 
     @classmethod
     def get_provider(cls) -> tuple[AIProvider, str]:
         provider_name = settings.AI_PROVIDER.lower()
 
-        if provider_name == "gemini":
-            if not settings.GEMINI_API_KEY:
-                logger.warning("gemini_provider_selected_but_no_api_key_falling_back_to_rule")
+        if provider_name == "groq":
+            if not settings.GROQ_API_KEY:
+                logger.warning("groq_provider_selected_but_no_api_key_falling_back_to_rule")
                 return RuleBasedProvider(), "rule"
 
-            if cls._gemini_instance is None:
+            if cls._groq_instance is None:
                 try:
-                    cls._gemini_instance = GeminiProvider()
+                    cls._groq_instance = GroqProvider()
                 except Exception as e:
-                    logger.error("gemini_instantiation_failed", error=str(e))
+                    logger.error("groq_instantiation_failed", error=str(e))
                     return RuleBasedProvider(), "rule"
 
-            if cls._gemini_instance.is_available():
-                logger.info("using_gemini_provider")
-                return cls._gemini_instance, "gemini"
+            if cls._groq_instance.is_available():
+                logger.info("using_groq_provider")
+                return cls._groq_instance, "groq"
             else:
-                logger.warning("gemini_unavailable_falling_back_to_rule")
+                logger.warning("groq_unavailable_falling_back_to_rule")
                 return RuleBasedProvider(), "rule"
 
         logger.info("using_rule_based_provider")
         return RuleBasedProvider(), "rule"
 
 
-class GeminiAssistantWrapper(AIProvider):
-    def __init__(self, gemini_provider: GeminiProvider):
-        self.gemini = gemini_provider
+class GroqAssistantWrapper(AIProvider):
+    def __init__(self, groq_provider: GroqProvider):
+        self.groq = groq_provider
 
     def ask(self, message: str, user_id: Union[str, uuid.UUID], db: Session) -> dict:
         context_service = FinancialContextService(db)
@@ -50,22 +50,22 @@ class GeminiAssistantWrapper(AIProvider):
         financial_context_str = context.to_prompt_block()
 
         try:
-            answer = self.gemini.generate_response(message, financial_context_str)
+            answer = self.groq.generate_response(message, financial_context_str)
             recommendations = self._extract_recommendations(answer)
 
             return {
                 "answer": answer,
-                "intent": "gemini",
+                "intent": "groq",
                 "recommendations": recommendations,
                 "error": False,
             }
-        except (GeminiQuotaError, GeminiAPIError) as e:
-            logger.warning("gemini_wrapper_error",
+        except (GroqRateLimitError, GroqAPIError) as e:
+            logger.warning("groq_wrapper_error",
                            error=str(e),
                            error_type=type(e).__name__)
             return {
                 "answer": "",
-                "intent": "gemini_error",
+                "intent": "groq_error",
                 "recommendations": [],
                 "error": True,
                 "error_message": str(e),
@@ -89,41 +89,41 @@ class GeminiAssistantWrapper(AIProvider):
 def create_ai_provider() -> tuple[AIProvider, str]:
     provider_instance, provider_name = ProviderFactory.get_provider()
 
-    if provider_name == "gemini":
-        return GeminiAssistantWrapper(provider_instance), provider_name
+    if provider_name == "groq":
+        return GroqAssistantWrapper(provider_instance), provider_name
 
     return provider_instance, provider_name
 
 
-def get_gemini_diagnostics() -> dict:
-    api_key = settings.GEMINI_API_KEY
+def get_groq_diagnostics() -> dict:
+    api_key = settings.GROQ_API_KEY
     api_key_loaded = bool(api_key)
     api_key_prefix = api_key[:6] + "..." if api_key and len(api_key) > 6 else ""
 
-    gemini_available = False
+    groq_available = False
     fallback_active = True
     quota_exceeded = False
 
     if api_key_loaded:
         try:
-            gem = GeminiProvider()
-            gemini_available = gem.is_available()
-            connectivity = gem.check_connectivity()
+            groq = GroqProvider()
+            groq_available = groq.is_available()
+            connectivity = groq.check_connectivity()
             fallback_active = not connectivity
-            if gemini_available and not connectivity:
+            if groq_available and not connectivity:
                 quota_exceeded = True
         except Exception:
             fallback_active = True
 
     provider_name = settings.AI_PROVIDER.lower()
-    if provider_name != "gemini":
+    if provider_name != "groq":
         fallback_active = True
 
     return {
-        "model": "gemini-2.0-flash",
+        "model": settings.AI_MODEL,
         "api_key_loaded": api_key_loaded,
         "api_key_prefix": api_key_prefix,
-        "gemini_connectivity": gemini_available and not quota_exceeded,
+        "connectivity": groq_available and not quota_exceeded,
         "fallback_active": fallback_active,
         "provider": provider_name,
         "quota_exceeded": quota_exceeded,

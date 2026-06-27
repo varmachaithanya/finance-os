@@ -120,7 +120,7 @@ class AIHealthResponse(BaseModel):
     model: str
     api_key_loaded: bool
     api_key_prefix: str
-    gemini_connectivity: bool
+    connectivity: bool
     fallback_active: bool
     provider: str
     quota_exceeded: bool

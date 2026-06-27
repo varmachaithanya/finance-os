@@ -42,8 +42,9 @@ class Settings(BaseSettings):
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
 
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
-    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "rule")
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "groq")
+    AI_MODEL: str = os.getenv("AI_MODEL", "llama-3.3-70b-versatile")
 
     class Config:
         env_file = ".env"
