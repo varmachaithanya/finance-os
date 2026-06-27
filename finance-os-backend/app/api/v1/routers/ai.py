@@ -7,6 +7,7 @@ from app.models.user import User
 from app.schemas.ai import (
     PredictionResponse, SavingsResponse, AnomalyListResponse,
     EMIRequest, EMIResponse, DebtPayoffResponse, ChatRequest, ChatResponse, ChatHistoryItem,
+    AIHealthResponse,
 )
 from app.services.prediction_service import PredictionService
 from app.services.savings_service import SavingsRecommendationEngine
@@ -153,3 +154,19 @@ def chat_recommendation_count(
     service = FinancialAssistantService(db)
     count = service.get_recommendation_count(str(current_user.id))
     return {"count": count}
+
+
+@router.get("/health", summary="AI health and diagnostics", response_model=AIHealthResponse)
+def ai_health() -> AIHealthResponse:
+    from app.services.provider_factory import get_gemini_diagnostics
+    diag = get_gemini_diagnostics()
+    return AIHealthResponse(
+        model=diag["model"],
+        api_key_loaded=diag["api_key_loaded"],
+        api_key_prefix=diag["api_key_prefix"],
+        gemini_connectivity=diag["gemini_connectivity"],
+        fallback_active=diag["fallback_active"],
+        provider=diag["provider"],
+        quota_exceeded=diag["quota_exceeded"],
+        last_error=diag["last_error"],
+    )

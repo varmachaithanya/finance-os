@@ -1,4 +1,5 @@
 import uuid
+import structlog
 from datetime import date, timedelta
 from decimal import Decimal
 from typing import Union
@@ -12,6 +13,8 @@ from app.models.budget import Budget
 from app.models.category import Category
 from app.models.chat_history import ChatHistory
 from app.services.financial_context_service import FinancialContextService
+
+logger = structlog.get_logger()
 
 
 class AIProvider:
@@ -530,32 +533,52 @@ class FinancialAssistantService:
         if isinstance(user_id, str):
             user_id = uuid.UUID(user_id)
 
+        provider_used = self.provider_name
+        result = None
+
         if self.provider_name == "gemini":
-            context_service = FinancialContextService(self.db)
-            context = context_service.get_context(user_id)
-            financial_context_str = context.to_prompt_block()
+            try:
+                result = self.provider.ask(message, user_id, self.db)
+                if "error" in result and result["error"]:
+                    raise Exception(result.get("error_message", "Gemini returned an error"))
+            except Exception as e:
+                error_str = str(e)
+                logger.warning("gemini_fallback_to_rule",
+                               user_id=str(user_id),
+                               error=error_str)
 
-            from app.services.gemini_provider import GeminiProvider
-            gemini = GeminiProvider()
-            answer = gemini.generate_response(message, financial_context_str)
+                if "429" in error_str or "Quota" in error_str or "quota" in error_str:
+                    logger.warning("gemini_quota_fallback",
+                                   user_id=str(user_id),
+                                   model="gemini-2.0-flash",
+                                   error=error_str)
 
-            result = {
-                "answer": answer,
-                "intent": "gemini",
-                "recommendations": [],
-            }
+                fallback_provider = RuleBasedProvider()
+                result = fallback_provider.ask(message, user_id, self.db)
+                provider_used = "gemini_fallback"
         else:
             result = self.provider.ask(message, user_id, self.db)
+
+        if result is None:
+            from app.services.provider_factory import RuleBasedProvider
+            fallback_provider = RuleBasedProvider()
+            result = fallback_provider.ask(message, user_id, self.db)
+            provider_used = "rule_emergency"
 
         chat = ChatHistory(
             user_id=user_id,
             question=message,
             answer=result["answer"],
             intent=result["intent"],
-            provider=self.provider_name,
+            provider=provider_used,
         )
         self.db.add(chat)
         self.db.commit()
+
+        logger.info("chat_response",
+                    user_id=str(user_id),
+                    intent=result["intent"],
+                    provider=provider_used)
 
         return result
 

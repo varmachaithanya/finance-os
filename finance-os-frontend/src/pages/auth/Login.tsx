@@ -14,6 +14,7 @@ import {
   TextField,
 } from '@mui/material';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import ThemeToggle from '@/components/ThemeToggle';
 import { login as loginApi } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import AuthInput from '@/components/auth/AuthInput';
@@ -120,8 +121,14 @@ export default function Login() {
           borderRadius: '20px',
           p: { xs: 2.5, sm: 5 },
           mx: 2,
+          position: 'relative',
         }}
       >
+        {/* Theme toggle */}
+        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+          <ThemeToggle />
+        </Box>
+
         {/* Pill badge */}
         <Box
           sx={{
@@ -152,7 +159,8 @@ export default function Login() {
             width: 52,
             height: 52,
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+            background: '#0F172A',
+            border: '2px solid #D4AF37',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -160,8 +168,8 @@ export default function Login() {
             mb: 2,
           }}
         >
-          <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: 24, lineHeight: 1 }}>
-            W
+          <Typography sx={{ color: '#D4AF37', fontWeight: 800, fontSize: 24, lineHeight: 1, fontFamily: '"Inter", sans-serif' }}>
+            A
           </Typography>
         </Box>
 

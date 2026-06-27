@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { forgotPassword as forgotPasswordApi } from '@/services/authService';
 import AuthInput from '@/components/auth/AuthInput';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const forgotSchema = z.object({
   email: z
@@ -68,8 +69,14 @@ export default function ForgotPassword() {
           border: '1px solid #1E2D45',
           borderRadius: '20px',
           p: { xs: 3, sm: 5 },
+          position: 'relative',
         }}
       >
+        {/* Theme toggle */}
+        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+          <ThemeToggle />
+        </Box>
+
         {/* Back to login */}
         <Link
           component={RouterLink}
@@ -91,6 +98,38 @@ export default function ForgotPassword() {
           </svg>
           Back to Login
         </Link>
+
+        {/* Logo mark */}
+        <Box
+          sx={{
+            width: 48,
+            height: 48,
+            borderRadius: '14px',
+            background: '#0F172A',
+            border: '2px solid #D4AF37',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            mx: 'auto',
+            mb: 1,
+          }}
+        >
+          <Typography sx={{ color: '#D4AF37', fontWeight: 800, fontSize: 20, lineHeight: 1, fontFamily: '"Inter", sans-serif' }}>
+            A
+          </Typography>
+        </Box>
+        <Typography
+          sx={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: '#D4AF37',
+            textAlign: 'center',
+            letterSpacing: '0.5px',
+            mb: 2,
+          }}
+        >
+          Arthya
+        </Typography>
 
         {/* Lock icon */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>

@@ -114,3 +114,14 @@ class ChatHistoryItem(BaseModel):
     intent: Optional[str] = None
     provider: Optional[str] = None
     created_at: datetime
+
+
+class AIHealthResponse(BaseModel):
+    model: str
+    api_key_loaded: bool
+    api_key_prefix: str
+    gemini_connectivity: bool
+    fallback_active: bool
+    provider: str
+    quota_exceeded: bool
+    last_error: Optional[str] = None

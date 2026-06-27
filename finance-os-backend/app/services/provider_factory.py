@@ -1,11 +1,11 @@
 import uuid
+import structlog
 from typing import Optional, Union
 from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.services.financial_assistant_service import AIProvider, RuleBasedProvider
-from app.services.gemini_provider import GeminiProvider
+from app.services.gemini_provider import GeminiProvider, GeminiQuotaError, GeminiAPIError
 from app.services.financial_context_service import FinancialContextService
-import structlog
 
 logger = structlog.get_logger()
 
@@ -49,14 +49,27 @@ class GeminiAssistantWrapper(AIProvider):
         context = context_service.get_context(user_id)
         financial_context_str = context.to_prompt_block()
 
-        answer = self.gemini.generate_response(message, financial_context_str)
-        recommendations = self._extract_recommendations(answer)
+        try:
+            answer = self.gemini.generate_response(message, financial_context_str)
+            recommendations = self._extract_recommendations(answer)
 
-        return {
-            "answer": answer,
-            "intent": "gemini",
-            "recommendations": recommendations,
-        }
+            return {
+                "answer": answer,
+                "intent": "gemini",
+                "recommendations": recommendations,
+                "error": False,
+            }
+        except (GeminiQuotaError, GeminiAPIError) as e:
+            logger.warning("gemini_wrapper_error",
+                           error=str(e),
+                           error_type=type(e).__name__)
+            return {
+                "answer": "",
+                "intent": "gemini_error",
+                "recommendations": [],
+                "error": True,
+                "error_message": str(e),
+            }
 
     def _extract_recommendations(self, text: str) -> list[str]:
         lines = text.split("\n")
@@ -80,3 +93,39 @@ def create_ai_provider() -> tuple[AIProvider, str]:
         return GeminiAssistantWrapper(provider_instance), provider_name
 
     return provider_instance, provider_name
+
+
+def get_gemini_diagnostics() -> dict:
+    api_key = settings.GEMINI_API_KEY
+    api_key_loaded = bool(api_key)
+    api_key_prefix = api_key[:6] + "..." if api_key and len(api_key) > 6 else ""
+
+    gemini_available = False
+    fallback_active = True
+    quota_exceeded = False
+
+    if api_key_loaded:
+        try:
+            gem = GeminiProvider()
+            gemini_available = gem.is_available()
+            connectivity = gem.check_connectivity()
+            fallback_active = not connectivity
+            if gemini_available and not connectivity:
+                quota_exceeded = True
+        except Exception:
+            fallback_active = True
+
+    provider_name = settings.AI_PROVIDER.lower()
+    if provider_name != "gemini":
+        fallback_active = True
+
+    return {
+        "model": "gemini-2.0-flash",
+        "api_key_loaded": api_key_loaded,
+        "api_key_prefix": api_key_prefix,
+        "gemini_connectivity": gemini_available and not quota_exceeded,
+        "fallback_active": fallback_active,
+        "provider": provider_name,
+        "quota_exceeded": quota_exceeded,
+        "last_error": None,
+    }

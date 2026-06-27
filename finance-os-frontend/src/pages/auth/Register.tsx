@@ -17,6 +17,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
+import ThemeToggle from '@/components/ThemeToggle';
 import { register as registerApi } from '@/services/authService';
 import { useAuthStore } from '@/app/store';
 import AuthInput from '@/components/auth/AuthInput';
@@ -136,8 +137,14 @@ export default function Register() {
           border: '1px solid #1E2D45',
           borderRadius: '20px',
           p: { xs: 3, sm: 5 },
+          position: 'relative',
         }}
       >
+        {/* Theme toggle */}
+        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+          <ThemeToggle />
+        </Box>
+
         {/* Pill badge */}
         <Box
           sx={{
@@ -168,7 +175,8 @@ export default function Register() {
             width: 52,
             height: 52,
             borderRadius: '16px',
-            background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+            background: '#0F172A',
+            border: '2px solid #D4AF37',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -176,8 +184,8 @@ export default function Register() {
             mb: 2,
           }}
         >
-          <Typography sx={{ color: '#fff', fontWeight: 700, fontSize: 24, lineHeight: 1 }}>
-            W
+          <Typography sx={{ color: '#D4AF37', fontWeight: 800, fontSize: 24, lineHeight: 1, fontFamily: '"Inter", sans-serif' }}>
+            A
           </Typography>
         </Box>
 
