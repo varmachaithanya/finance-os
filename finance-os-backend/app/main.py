@@ -47,10 +47,16 @@ async def lifespan(app: FastAPI):
                     refresh_token TEXT,
                     token_expiry TIMESTAMP,
                     is_connected BOOLEAN DEFAULT TRUE,
+                    last_fetched_at TIMESTAMP,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW(),
                     UNIQUE(user_id)
                 )
+            """))
+            conn.execute(sa_text("""
+                ALTER TABLE gmail_tokens
+                ADD COLUMN IF NOT EXISTS
+                last_fetched_at TIMESTAMP
             """))
             conn.commit()
         logger.info("gmail_tokens table ready")

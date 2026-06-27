@@ -7,19 +7,62 @@ export interface GmailTransaction {
   merchant: string;
   date: string;
   bank: string;
-  suggested_category: string | null;
-  suggested_category_id: string | null;
+  suggested_category: string;
   raw_subject: string;
   raw_snippet: string;
   selected: boolean;
 }
 
+export interface FetchTransactionsResponse {
+  transactions: GmailTransaction[];
+  total: number;
+  total_found: number;
+  parsed_ok: number;
+  skipped_no_amount: number;
+  skipped_invalid: number;
+  skipped_error: number;
+  days_searched: number;
+  is_incremental: boolean;
+  fetched_at: string;
+  last_fetch_was: string | null;
+}
+
+export interface ImportTransactionsResponse {
+  imported_count: number;
+  duplicate_count: number;
+  failed_count: number;
+  message: string;
+}
+
 export const gmailService = {
-  getAuthUrl: () => api.get<{ auth_url: string }>('/gmail/auth-url').then(r => r.data),
-  getStatus: () => api.get<{ connected: boolean; email: string | null }>('/gmail/status').then(r => r.data),
-  fetchTransactions: (days: number = 30) =>
-    api.post<{ transactions: GmailTransaction[]; total: number }>('/gmail/fetch-transactions', null, { params: { days } }).then(r => r.data),
-  importTransactions: (transactions: Array<{ amount: number; category_id: string; description: string; expense_date: string; payment_method: string }>) =>
-    api.post<{ imported_count: number; failed_count: number }>('/gmail/import-transactions', { transactions }).then(r => r.data),
-  disconnect: () => api.delete('/gmail/disconnect').then(r => r.data),
+  getAuthUrl: async () => {
+    const res = await api.get<{ auth_url: string }>('/gmail/auth-url');
+    return res.data;
+  },
+
+  getStatus: async () => {
+    const res = await api.get<{ connected: boolean; connected_at?: string }>('/gmail/status');
+    return res.data;
+  },
+
+  fetchTransactions: async (params: { days?: number; incremental?: boolean }) => {
+    const res = await api.post<FetchTransactionsResponse>('/gmail/fetch-transactions', null, { params });
+    return res.data;
+  },
+
+  importTransactions: async (transactions: Array<{
+    amount: number;
+    description: string;
+    expense_date: string;
+    suggested_category: string;
+    payment_method: string;
+  }>) => {
+    const res = await api.post<ImportTransactionsResponse>('/gmail/import-transactions', { transactions });
+    return res.data;
+  },
+
+  disconnect: async () => {
+    const res = await api.delete('/gmail/disconnect');
+    return res.data;
+  },
 };

@@ -86,12 +86,12 @@ def get_transaction_type(text_content: str) -> str:
                    'transferred', 'sent']
     credit_words = ['credited', 'credit', 'received',
                     'deposited', 'refund', 'cashback']
-    for word in debit_words:
-        if word in text_lower:
-            return 'debit'
     for word in credit_words:
         if word in text_lower:
             return 'credit'
+    for word in debit_words:
+        if word in text_lower:
+            return 'debit'
     return 'debit'
 
 
@@ -129,6 +129,74 @@ def suggest_category(merchant: str, text_content: str) -> str:
         if any(kw in combined for kw in keywords):
             return category
     return 'Other'
+
+
+def detect_bank(sender: str, subject: str, body: str) -> str:
+    """Detect bank from email sender and content."""
+    sender_lower = sender.lower()
+    content_lower = f"{subject} {body[:200]}".lower()
+
+    bank_patterns = {
+        'HDFC Bank': ['hdfc', 'hdfcbank'],
+        'ICICI Bank': ['icici', 'icicidirect'],
+        'State Bank of India': ['sbi', 'onlinesbi', 'sbicard'],
+        'Axis Bank': ['axisbank', 'axis bank'],
+        'Kotak Mahindra Bank': ['kotak', 'kotakbank'],
+        'IndusInd Bank': ['indusind'],
+        'Yes Bank': ['yesbank', 'yes bank'],
+        'IDFC First Bank': ['idfcfirst', 'idfc'],
+        'Federal Bank': ['federalbank', 'federal bank'],
+        'RBL Bank': ['rblbank', 'rbl bank'],
+        'Paytm Payments Bank': ['paytmbank', 'paytm bank'],
+        'AU Small Finance Bank': ['aupayments', 'aubank'],
+    }
+
+    for bank_name, keywords in bank_patterns.items():
+        if any(kw in sender_lower for kw in keywords):
+            return bank_name
+        if any(kw in content_lower for kw in keywords):
+            return bank_name
+
+    return 'Bank Transaction'
+
+
+def is_valid_transaction(amount: float, merchant: str, subject: str, body: str) -> bool:
+    """Return True only if this is a real bank transaction, not OTP/promotional email."""
+    combined = f"{subject} {body}".lower()
+
+    if not amount or amount <= 0:
+        return False
+    if amount < 1 or amount > 10000000:
+        return False
+
+    transaction_keywords = [
+        'debited', 'credited', 'transaction',
+        'transferred', 'payment', 'spent',
+        'purchase', 'withdrawn', 'deposit',
+        'neft', 'imps', 'rtgs', 'upi'
+    ]
+    has_txn_keyword = any(kw in combined for kw in transaction_keywords)
+    if not has_txn_keyword:
+        return False
+
+    otp_patterns = [
+        'otp', 'one time password',
+        'verification code', 'do not share',
+        'never share', 'expires in'
+    ]
+    if any(p in combined for p in otp_patterns):
+        return False
+
+    promo_patterns = [
+        'offer', 'cashback offer',
+        'exciting offer', 'special offer',
+        'limited time', 'click here to',
+        'unsubscribe', 'terms and conditions apply'
+    ]
+    if sum(1 for p in promo_patterns if p in combined) >= 2:
+        return False
+
+    return True
 
 
 def extract_email_body(payload: dict) -> str:
@@ -172,23 +240,29 @@ def parse_amount(text_content: str) -> Optional[float]:
     return None
 
 
-def parse_merchant(text_content: str) -> str:
-    """Extract merchant name from email."""
+def parse_merchant(text_content: str, subject: str = "") -> str:
+    """Extract merchant name accurately from email."""
+    combined = f"{subject} {text_content}"
     patterns = [
-        r'(?:at|to|for|merchant[:\s]+)([A-Z][A-Za-z0-9\s&\-\.]+?)(?:\s+on|\s+via|\s+for|\.|,|\||$)',
-        r'(?:paid to|sent to|transfer to)\s+([A-Z][A-Za-z0-9\s]+?)(?:\s+on|\.|,|\||$)',
-        r'(?:merchant|vendor|payee)[:\s]+([A-Za-z0-9\s&\-\.]+?)(?:\s+on|\s+via|\s+for|\.|,|\||$)',
-        r'(?:to\s+)([A-Z][A-Za-z0-9\s]+?)(?:\s+(?:on|via|for|ref|date)|\.|,|\||$)',
-        r'(?:VPA[:\s]+)([a-zA-Z0-9.\-_]+@[a-zA-Z]+)',
-        r'(?:from\s+)([A-Z][A-Za-z0-9\s]+?)(?:\s+(?:on|via|for|ref|date)|\.|,|\||$)',
-        r'(?:paid\s+to\s+)([A-Z][A-Za-z0-9\s]+?)$',
+        r'\bat\s+([A-Za-z0-9][A-Za-z0-9\s\-&\.\']+?)(?:\s+on\s|\s+via\s|\s+for\s|\s+dated|\s+\d{2}[\/\-]|\.|,|\busing\b|\bthrough\b)',
+        r'\bto\s+([A-Za-z][A-Za-z0-9\s\-&\.]+?)(?:\s+on\s|\s+via\s|\s+for\s|\s+dated|\s+\d{2}[\/\-]|\.|,)',
+        r'merchant[:\s]+([A-Za-z0-9][A-Za-z0-9\s\-&\.]+?)(?:\s+on\s|\s+\d|\.|,|$)',
+        r'Info[:\s]+([A-Za-z0-9][A-Za-z0-9\s\-&\.@]+?)(?:\s+on\s|\s+\d|\.|,|$)',
     ]
     for pattern in patterns:
-        for match in re.finditer(pattern, text_content, re.IGNORECASE):
+        match = re.search(pattern, combined, re.IGNORECASE)
+        if match:
             merchant = match.group(1).strip()
-            if len(merchant) > 2:
+            merchant = re.sub(r'\s+', ' ', merchant)
+            merchant = re.sub(r'\s+(via|using|through|with)$', '', merchant, flags=re.IGNORECASE)
+            if len(merchant) >= 3 and not merchant.replace(' ', '').isdigit():
                 return merchant[:60]
-    return "Unknown"
+    upi_match = re.search(r'([a-zA-Z0-9.\-_]+@[a-zA-Z]+)', combined)
+    if upi_match:
+        name = upi_match.group(1).split('@')[0]
+        if len(name) >= 3:
+            return name[:60]
+    return "Bank Transaction"
 
 
 @router.get("/auth-url")
@@ -369,51 +443,72 @@ def get_gmail_status(
 @router.post("/fetch-transactions")
 def fetch_transactions(
     days: int = 30,
+    incremental: bool = True,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Fetch bank transaction emails from Gmail with full pagination and robust parsing."""
+    """Fetch bank transaction emails from Gmail with strict filtering and incremental support."""
     try:
-        service = get_gmail_service(
-            str(current_user.id), db
-        )
+        service = get_gmail_service(str(current_user.id), db)
         if not service:
             raise HTTPException(
                 status_code=401,
-                detail="Gmail not connected. "
-                       "Please connect Gmail first."
+                detail="Gmail not connected. Please connect Gmail first."
             )
 
-        BROAD_SENDERS = " OR ".join([
-            "from:alerts", "from:noreply", "from:statement", "from:notification",
-            "from:payments", "from:transaction", "from:banking", "from:service",
-            "from:alerts@hdfcbank.net", "from:alerts@icicibank.com",
-            "from:alert@sbi.co.in", "from:alerts@axisbank.com",
-            "from:kotak", "from:paytm", "from:phonepe", "from:google",
-            "from:amazon", "from:flipkart", "from:swiggy", "from:zomato",
-        ])
+        # Incremental fetch: only emails after last_fetched_at
+        token_row = db.execute(
+            text("SELECT last_fetched_at FROM gmail_tokens "
+                 "WHERE user_id = :uid AND is_connected = TRUE"),
+            {"uid": str(current_user.id)}
+        ).fetchone()
 
+        is_incremental = bool(incremental and token_row and token_row.last_fetched_at)
+        if is_incremental:
+            last_fetch = token_row.last_fetched_at
+            if hasattr(last_fetch, 'timestamp'):
+                after_timestamp = int(last_fetch.timestamp())
+            else:
+                after_timestamp = int(last_fetch.replace(tzinfo=None).timestamp())
+            query_time_filter = f"after:{after_timestamp}"
+        else:
+            query_time_filter = f"newer_than:{days}d"
+
+        # Stricter query: only known Indian bank sender domains + transaction subject keywords
         query = (
-            f"({BROAD_SENDERS} OR "
-            f"subject:debited OR subject:credited OR "
-            f"subject:transaction OR subject:payment OR "
-            f"subject:spent OR subject:received OR "
-            f"subject:purchase OR subject:withdrawal OR "
-            f"subject:transfer OR subject:sent OR "
-            f"subject:refund OR subject:cashback OR "
-            f"subject:UPI OR subject:NEFT OR subject:IMPS OR "
-            f"subject:alert OR subject:paid OR "
-            f"subject:recharge OR subject:bill) "
-            f"newer_than:{days}d"
+            "(from:alerts@hdfcbank.net "
+            "OR from:phishingalerts@hdfcbank.com "
+            "OR from:alerts@icicibank.com "
+            "OR from:onlinesbi@sbi.co.in "
+            "OR from:sbicard@sbicard.com "
+            "OR from:alerts@axisbank.com "
+            "OR from:noreply@axisbank.com "
+            "OR from:alerts@kotakbank.com "
+            "OR from:noreply@kotak.com "
+            "OR from:alerts@indusind.com "
+            "OR from:noreply@yesbank.in "
+            "OR from:noreply@idfcfirstbank.com "
+            "OR from:alerts@federalbank.co.in "
+            "OR from:noreply@rblbank.com "
+            "OR from:care@paytmbank.com "
+            "OR from:noreply@aupayments.com) "
+            "AND (subject:debited OR subject:credited "
+            "OR subject:\"transaction alert\" "
+            "OR subject:\"a/c\" "
+            "OR subject:\"acct\" "
+            "OR subject:spent OR subject:\"UPI txn\" "
+            "OR subject:NEFT OR subject:IMPS "
+            "OR subject:RTGS) "
+            f"{query_time_filter}"
         )
 
-        logger.info("Fetching Gmail messages", query=query, days=days)
+        logger.info("Fetching Gmail messages", query=query, days=days, incremental=is_incremental)
 
-        # ---- Paginated fetch ----
+        # ---- Paginated fetch (max 3 pages) ----
         all_messages = []
         page_token = None
         page_num = 0
-        while True:
+        while page_num < 3:
             page_num += 1
             result = service.users().messages().list(
                 userId='me',
@@ -426,12 +521,8 @@ def fetch_transactions(
             all_messages.extend(batch)
 
             page_token = result.get('nextPageToken')
-            logger.info(
-                "Gmail page fetched",
-                page=page_num, batch_size=len(batch),
-                total_so_far=len(all_messages),
-                has_next_page=page_token is not None,
-            )
+            logger.info("Gmail page fetched", page=page_num, batch_size=len(batch),
+                        total_so_far=len(all_messages), has_next_page=bool(page_token))
 
             if not page_token:
                 break
@@ -442,21 +533,17 @@ def fetch_transactions(
         # ---- Process each message ----
         transactions = []
         skipped_no_amount = 0
+        skipped_invalid = 0
         skipped_error = 0
         parsed_ok = 0
 
         for msg in all_messages:
             try:
                 message = service.users().messages().get(
-                    userId='me',
-                    id=msg['id'],
-                    format='full'
+                    userId='me', id=msg['id'], format='full'
                 ).execute()
 
-                headers = {
-                    h['name']: h['value']
-                    for h in message['payload']['headers']
-                }
+                headers = {h['name']: h['value'] for h in message['payload']['headers']}
                 subject = headers.get('Subject', '')
                 date_str = headers.get('Date', '')
                 sender = headers.get('From', '')
@@ -469,9 +556,14 @@ def fetch_transactions(
                     skipped_no_amount += 1
                     continue
 
-                merchant = parse_merchant(full_text)
+                merchant = parse_merchant(full_text, subject)
                 trans_type = get_transaction_type(full_text)
                 category = suggest_category(merchant, full_text)
+                bank = detect_bank(sender, subject, body)
+
+                if not is_valid_transaction(amount, merchant, subject, body):
+                    skipped_invalid += 1
+                    continue
 
                 try:
                     from email.utils import parsedate_to_datetime
@@ -479,42 +571,6 @@ def fetch_transactions(
                     expense_date = parsed_date.strftime('%Y-%m-%d')
                 except Exception:
                     expense_date = datetime.now().strftime('%Y-%m-%d')
-
-                # Enhanced bank detection
-                sender_lower = sender.lower()
-                bank = 'Unknown Bank'
-                if 'hdfc' in sender_lower:
-                    bank = 'HDFC Bank'
-                elif 'icici' in sender_lower:
-                    bank = 'ICICI Bank'
-                elif 'sbi' in sender_lower:
-                    bank = 'State Bank of India'
-                elif 'axis' in sender_lower:
-                    bank = 'Axis Bank'
-                elif 'kotak' in sender_lower:
-                    bank = 'Kotak Bank'
-                elif 'idfc' in sender_lower:
-                    bank = 'IDFC Bank'
-                elif 'federal' in sender_lower:
-                    bank = 'Federal Bank'
-                elif 'canara' in sender_lower:
-                    bank = 'Canara Bank'
-                elif 'unionbank' in sender_lower:
-                    bank = 'Union Bank'
-                elif 'yesbank' in sender_lower:
-                    bank = 'Yes Bank'
-                elif 'paytm' in sender_lower:
-                    bank = 'Paytm'
-                elif 'phonepe' in sender_lower or 'phone pe' in sender_lower:
-                    bank = 'PhonePe'
-                elif 'gpay' in sender_lower or 'google pay' in sender_lower or 'google' in sender_lower:
-                    bank = 'Google Pay'
-                elif 'amazon' in sender_lower:
-                    bank = 'Amazon Pay'
-                elif 'swiggy' in sender_lower:
-                    bank = 'Swiggy'
-                elif 'zomato' in sender_lower:
-                    bank = 'Zomato'
 
                 transactions.append({
                     'id': msg['id'],
@@ -538,14 +594,18 @@ def fetch_transactions(
 
         transactions.sort(key=lambda x: x['date'], reverse=True)
 
-        logger.info(
-            "Transaction extraction summary",
-            total_found=total_found,
-            parsed_ok=parsed_ok,
-            skipped_no_amount=skipped_no_amount,
-            skipped_error=skipped_error,
-            total_returned=len(transactions),
+        # Update last_fetched_at
+        db.execute(
+            text("UPDATE gmail_tokens SET last_fetched_at = NOW() "
+                 "WHERE user_id = :uid"),
+            {"uid": str(current_user.id)}
         )
+        db.commit()
+
+        logger.info("Transaction extraction summary", total_found=total_found,
+                    parsed_ok=parsed_ok, skipped_no_amount=skipped_no_amount,
+                    skipped_invalid=skipped_invalid, skipped_error=skipped_error,
+                    total_returned=len(transactions))
 
         return {
             "transactions": transactions,
@@ -553,8 +613,12 @@ def fetch_transactions(
             "total_found": total_found,
             "parsed_ok": parsed_ok,
             "skipped_no_amount": skipped_no_amount,
+            "skipped_invalid": skipped_invalid,
             "skipped_error": skipped_error,
             "days_searched": days,
+            "is_incremental": is_incremental,
+            "fetched_at": datetime.utcnow().isoformat(),
+            "last_fetch_was": str(token_row.last_fetched_at) if token_row and token_row.last_fetched_at else None,
         }
 
     except HTTPException:
@@ -582,10 +646,10 @@ def import_transactions(
     for txn in transactions:
         try:
             amount = float(txn.get('amount', 0))
-            expense_date = txn.get(
+            expense_date = txn.get('expense_date') or txn.get(
                 'date', datetime.now().strftime('%Y-%m-%d')
             )
-            description = txn.get('merchant', 'Gmail Import')[:500]
+            description = txn.get('description') or txn.get('merchant', 'Gmail Import')[:500]
             suggested_category = txn.get(
                 'suggested_category', 'Other'
             )
@@ -609,13 +673,14 @@ def import_transactions(
                 duplicates += 1
                 continue
 
+            cat_name = txn.get('suggested_category') or txn.get('category') or 'Other'
             category_result = db.execute(
                 text("SELECT id FROM categories "
                      "WHERE name = :name "
                      "AND (user_id = :uid OR user_id IS NULL) "
                      "LIMIT 1"),
                 {
-                    "name": txn.get('category', 'Other'),
+                    "name": cat_name,
                     "uid": str(current_user.id)
                 }
             ).fetchone()
