@@ -526,8 +526,10 @@ class RuleBasedProvider(AIProvider):
 class FinancialAssistantService:
     def __init__(self, db: Session):
         self.db = db
+        self._rule_provider = RuleBasedProvider()
         from app.services.provider_factory import create_ai_provider
         self.provider, self.provider_name = create_ai_provider()
+        logger.info("ai_provider_initialized", provider=self.provider_name)
 
     def ask(self, message: str, user_id: Union[str, uuid.UUID]) -> dict:
         if isinstance(user_id, str):
@@ -536,33 +538,33 @@ class FinancialAssistantService:
         provider_used = self.provider_name
         result = None
 
-        if self.provider_name == "gemini":
-            try:
+        try:
+            if self.provider_name == "gemini":
+                logger.info("using_gemini")
                 result = self.provider.ask(message, user_id, self.db)
                 if "error" in result and result["error"]:
                     raise Exception(result.get("error_message", "Gemini returned an error"))
-            except Exception as e:
-                error_str = str(e)
-                logger.warning("gemini_fallback_to_rule",
+            else:
+                logger.info("using_rule_based_provider")
+                result = self.provider.ask(message, user_id, self.db)
+        except Exception as e:
+            error_str = str(e)
+            logger.warning("gemini_failed_switching_to_rule_based_provider",
+                           user_id=str(user_id),
+                           error=error_str)
+
+            if "429" in error_str or "Quota" in error_str or "quota" in error_str:
+                logger.warning("gemini_quota_fallback",
                                user_id=str(user_id),
+                               model="gemini-2.0-flash",
                                error=error_str)
 
-                if "429" in error_str or "Quota" in error_str or "quota" in error_str:
-                    logger.warning("gemini_quota_fallback",
-                                   user_id=str(user_id),
-                                   model="gemini-2.0-flash",
-                                   error=error_str)
-
-                fallback_provider = RuleBasedProvider()
-                result = fallback_provider.ask(message, user_id, self.db)
-                provider_used = "gemini_fallback"
-        else:
-            result = self.provider.ask(message, user_id, self.db)
+            result = self._rule_provider.ask(message, user_id, self.db)
+            provider_used = "gemini_fallback"
 
         if result is None:
-            from app.services.provider_factory import RuleBasedProvider
-            fallback_provider = RuleBasedProvider()
-            result = fallback_provider.ask(message, user_id, self.db)
+            logger.info("using_rule_based_provider_emergency")
+            result = self._rule_provider.ask(message, user_id, self.db)
             provider_used = "rule_emergency"
 
         chat = ChatHistory(
