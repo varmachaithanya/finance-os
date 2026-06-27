@@ -39,11 +39,7 @@ const DRAWER_ITEMS = [
   { label: 'Subscriptions', path: '/subscriptions', icon: '🔄', color: '#0EA5E9' },
   { label: 'Budgets', path: '/budgets', icon: '📊', color: '#F59E0B' },
   { label: 'Reports', path: '/reports', icon: '📋', color: '#00C9A7' },
-  { label: 'Predictions', path: '/predictions', icon: '🔮', color: '#00C9A7' },
-  { label: 'Saving Tips', path: '/savings-suggestions', icon: '💡', color: '#F59E0B' },
-  { label: 'Alerts', path: '/spending-alerts', icon: '⚡', color: '#E24B4A' },
   { label: 'EMI Calc', path: '/tools/emi-calculator', icon: '🧮', color: '#0EA5E9' },
-  { label: 'Debt Plan', path: '/debt-optimizer', icon: '🎯', color: '#8B5CF6' },
   { label: 'Notifications', path: '/notifications', icon: '🔔', color: '#8B5CF6' },
   { label: 'Profile', path: '/profile', icon: '👤', color: '#00C9A7' },
 ];

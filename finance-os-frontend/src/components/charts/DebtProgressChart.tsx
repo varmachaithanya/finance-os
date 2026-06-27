@@ -70,7 +70,7 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, tota
         {'\u{1F3AF}'} Debt Payoff Progress
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-        <Box sx={{ width: 140, height: 140, flexShrink: 0 }}>
+        <Box sx={{ width: 140, height: 140, flexShrink: 0, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               innerRadius="70%" outerRadius="100%"
@@ -80,8 +80,19 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, tota
                 background={{ fill: theme.palette.divider }}/>
             </RadialBarChart>
           </ResponsiveContainer>
-          <Typography textAlign="center" fontSize={20}
-            fontWeight={700} color="#00C9A7" mt={-8}>
+          <Typography
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#00C9A7',
+              pointerEvents: 'none',
+            }}
+          >
             {paidPct}%
           </Typography>
           <Typography textAlign="center" fontSize={11}

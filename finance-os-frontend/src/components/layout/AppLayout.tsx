@@ -29,8 +29,8 @@ const AppLayout: React.FC = () => {
         sx={{
           flexGrow: 1,
           mt: 8,
-          ml: { md: `${DRAWER_WIDTH}px` },
-          transition: 'margin-left 0.3s ease',
+          display: 'flex',
+          justifyContent: 'center',
           minWidth: 0,
           overflowX: 'hidden',
           overflowY: 'auto',
@@ -39,8 +39,8 @@ const AppLayout: React.FC = () => {
       >
         <Box
           sx={{
-            maxWidth: 1280,
-            mx: 'auto',
+            width: '100%',
+            maxWidth: 1600,
             px: { xs: 2, sm: 3 },
             py: { xs: 2, sm: 3 },
           }}

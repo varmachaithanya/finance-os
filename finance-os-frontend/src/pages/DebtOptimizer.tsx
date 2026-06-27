@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Box, Paper, Typography, Tabs, Tab, Chip, Skeleton, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, TextField } from '@mui/material';
+import { Box, Paper, Typography, Tabs, Tab, Chip, Skeleton, Alert, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, useTheme, TextField, Grid } from '@mui/material';
 import PageHeader from '@/components/common/PageHeader';
 import DebtPayoffChart from '@/components/charts/DebtPayoffChart';
 import { aiService } from '@/services/aiService';

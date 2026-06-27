@@ -52,7 +52,7 @@ function CircularGauge({ value, color, label, theme }: { value: number; color: s
           transform="rotate(-90 50 50)"
           style={{ transition: 'stroke-dashoffset 0.8s ease' }}
         />
-        <text x="50" y="52" textAnchor="middle" fill={color} fontSize="20" fontWeight={700}>
+        <text x="50" y="50" textAnchor="middle" dominantBaseline="central" fill={color} fontSize="20" fontWeight={700}>
           {value.toFixed(0)}%
         </text>
       </svg>
