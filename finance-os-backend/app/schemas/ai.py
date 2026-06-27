@@ -95,3 +95,22 @@ class DebtPayoffResponse(BaseModel):
     avalanche: DebtPayoffPlan
     best_strategy: str
     interest_saved: Decimal
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatResponse(BaseModel):
+    answer: str
+    intent: str
+    recommendations: list[str] = []
+
+
+class ChatHistoryItem(BaseModel):
+    id: str
+    question: str
+    answer: str
+    intent: Optional[str] = None
+    provider: Optional[str] = None
+    created_at: datetime

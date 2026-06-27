@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
 
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "rule")
+
     class Config:
         env_file = ".env"
         extra = "allow"

@@ -12,6 +12,7 @@ from app.models.webauthn import WebAuthnCredential, WebAuthnChallenge
 from app.models.gmail_token import GmailToken
 from app.models.prediction import SpendingPrediction
 from app.models.anomaly import AnomalyAlert
+from app.models.chat_history import ChatHistory
 
 __all__ = [
     "Base",
@@ -29,4 +30,5 @@ __all__ = [
     "GmailToken",
     "SpendingPrediction",
     "AnomalyAlert",
+    "ChatHistory",
 ]

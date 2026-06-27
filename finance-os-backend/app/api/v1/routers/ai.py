@@ -6,13 +6,14 @@ from app.api.deps import get_db, get_current_user
 from app.models.user import User
 from app.schemas.ai import (
     PredictionResponse, SavingsResponse, AnomalyListResponse,
-    EMIRequest, EMIResponse, DebtPayoffResponse,
+    EMIRequest, EMIResponse, DebtPayoffResponse, ChatRequest, ChatResponse, ChatHistoryItem,
 )
 from app.services.prediction_service import PredictionService
 from app.services.savings_service import SavingsRecommendationEngine
 from app.services.anomaly_service import AnomalyDetectionService
 from app.services.emi_calculator import calculate_emi
 from app.services.debt_optimizer import DebtOptimizerService
+from app.services.financial_assistant_service import FinancialAssistantService
 
 router = APIRouter(prefix="/ai", tags=["AI Features"])
 
@@ -117,3 +118,38 @@ def debt_payoff_plan(
 ) -> DebtPayoffResponse:
     service = DebtOptimizerService(db)
     return service.generate_plan(str(current_user.id), monthly_budget)
+
+
+@router.post("/chat", summary="Ask the WealthWise AI Coach a question")
+def chat(
+    req: ChatRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> ChatResponse:
+    service = FinancialAssistantService(db)
+    result = service.ask(req.message, str(current_user.id))
+    return ChatResponse(
+        answer=result["answer"],
+        intent=result["intent"],
+        recommendations=result["recommendations"],
+    )
+
+
+@router.get("/chat/history", summary="Get chat history")
+def chat_history(
+    limit: int = Query(default=50, le=100),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[ChatHistoryItem]:
+    service = FinancialAssistantService(db)
+    return service.get_history(str(current_user.id), limit)
+
+
+@router.get("/chat/recommendations/count", summary="Get recommendation badge count")
+def chat_recommendation_count(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    service = FinancialAssistantService(db)
+    count = service.get_recommendation_count(str(current_user.id))
+    return {"count": count}

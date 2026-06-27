@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Box, useMediaQuery, useTheme } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import BottomNav from './BottomNav';
+
+const FloatChatFab = React.lazy(() => import('@/components/chat/FloatingChatFab'));
+const ChatPanel = React.lazy(() => import('@/components/chat/ChatPanel'));
 
 const DRAWER_WIDTH = 240;
 
@@ -49,6 +52,10 @@ const AppLayout: React.FC = () => {
         </Box>
       </Box>
       <BottomNav />
+      <Suspense fallback={null}>
+        <FloatChatFab />
+        <ChatPanel />
+      </Suspense>
     </Box>
   );
 };
