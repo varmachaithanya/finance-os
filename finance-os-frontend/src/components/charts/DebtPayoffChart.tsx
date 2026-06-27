@@ -41,7 +41,7 @@ export default function DebtPayoffChart({ snowball, avalanche }: Props) {
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
           <Line type="monotone" dataKey="snowball" stroke="#F59E0B" name="Snowball" strokeWidth={2} dot={false} />
-          <Line type="monotone" dataKey="avalanche" stroke="#00C9A7" name="Avalanche" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="avalanche" stroke="#10B981" name="Avalanche" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </Box>

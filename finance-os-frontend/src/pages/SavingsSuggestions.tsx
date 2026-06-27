@@ -7,9 +7,9 @@ import { aiService } from '@/services/aiService';
 const fmtCurrency = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
 const priorityConfig: Record<string, { color: string; bg: string }> = {
-  high: { color: '#E24B4A', bg: '#E24B4A20' },
+  high: { color: '#EF4444', bg: '#EF444420' },
   medium: { color: '#F59E0B', bg: '#F59E0B20' },
-  low: { color: '#00C9A7', bg: '#00C9A720' },
+  low: { color: '#10B981', bg: '#10B98120' },
 };
 
 export default function SavingsSuggestions() {
@@ -37,7 +37,7 @@ export default function SavingsSuggestions() {
           <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
             <Paper sx={{ p: 2, flex: 1, borderRadius: '14px', background: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography fontSize={12} color="text.secondary">Potential Monthly Savings</Typography>
-              <Typography fontSize={24} fontWeight={700} color="#00C9A7">{fmtCurrency(data.total_monthly_savings)}</Typography>
+              <Typography fontSize={24} fontWeight={700} color="#10B981">{fmtCurrency(data.total_monthly_savings)}</Typography>
             </Paper>
             <Paper sx={{ p: 2, flex: 1, borderRadius: '14px', background: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
               <Typography fontSize={12} color="text.secondary">Potential Yearly Savings</Typography>
@@ -55,11 +55,11 @@ export default function SavingsSuggestions() {
                       <SavingsIcon sx={{ fontSize: 20, color: cfg.color }} />
                       <Typography fontWeight={600} fontSize={15} color="text.primary">{s.title}</Typography>
                       <Chip label={s.priority.toUpperCase()} size="small" sx={{ fontSize: 10, fontWeight: 700, background: cfg.bg, color: cfg.color }} />
-                      {s.category && <Chip label={s.category} size="small" sx={{ fontSize: 10, background: '#0EA5E920', color: '#0EA5E9' }} />}
+                      {s.category && <Chip label={s.category} size="small" sx={{ fontSize: 10, background: '#14B8A620', color: '#14B8A6' }} />}
                     </Box>
                     <Typography fontSize={13} color="text.secondary" mb={1.5}>{s.description}</Typography>
                     <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Typography fontSize={13} fontWeight={600} color="#00C9A7">Save {fmtCurrency(s.monthly_savings)}/month</Typography>
+                      <Typography fontSize={13} fontWeight={600} color="#10B981">Save {fmtCurrency(s.monthly_savings)}/month</Typography>
                       <Typography fontSize={13} fontWeight={600} color="#F59E0B">{fmtCurrency(s.yearly_savings)}/year</Typography>
                     </Box>
                   </Paper>

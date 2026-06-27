@@ -85,10 +85,10 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerWidth, mobileOpen, onClose }) =
                 mx: 1,
                 mb: 0.25,
                 '&.active': {
-                  backgroundColor: '#00C9A720',
-                  color: '#00C9A7',
+                  backgroundColor: '#10B98120',
+                  color: '#10B981',
                   '& .MuiListItemIcon-root': {
-                    color: '#00C9A7',
+                    color: '#10B981',
                   },
                   '&::before': {
                     content: '""',
@@ -99,7 +99,7 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerWidth, mobileOpen, onClose }) =
                     width: 3,
                     height: 20,
                     borderRadius: '0 4px 4px 0',
-                    background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                    background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                   },
                 },
               })}
@@ -123,10 +123,10 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerWidth, mobileOpen, onClose }) =
                 mx: 1,
                 mb: 0.25,
                 '&.active': {
-                  backgroundColor: '#00C9A720',
-                  color: '#00C9A7',
+                  backgroundColor: '#10B98120',
+                  color: '#10B981',
                   '& .MuiListItemIcon-root': {
-                    color: '#00C9A7',
+                    color: '#10B981',
                   },
                   '&::before': {
                     content: '""',
@@ -137,7 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerWidth, mobileOpen, onClose }) =
                     width: 3,
                     height: 20,
                     borderRadius: '0 4px 4px 0',
-                    background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                    background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                   },
                 },
               })}

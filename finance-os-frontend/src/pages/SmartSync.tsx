@@ -42,7 +42,7 @@ const EXPENSE_CATEGORIES = [
   'OTT Subscriptions', 'Mobile Recharge', 'Other'
 ];
 
-const getBankColor = (bank: string) => BANK_COLORS[bank] || '#4A6080';
+const getBankColor = (bank: string) => BANK_COLORS[bank] || '#94A3B8';
 const getBankShort = (bank: string) => BANK_SHORTS[bank] || bank.charAt(0).toUpperCase();
 
 export default function ArthyaSmartSync() {
@@ -181,7 +181,7 @@ export default function ArthyaSmartSync() {
             variant="contained"
             onClick={handleConnect}
             sx={{
-              background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+              background: 'linear-gradient(135deg, #10B981, #14B8A6)',
               borderRadius: '12px',
               px: 4, py: 1.5,
               textTransform: 'none',
@@ -198,7 +198,7 @@ export default function ArthyaSmartSync() {
       {status?.connected && !fetched && (
         <Paper sx={{ p: 4, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', maxWidth: 520, mx: 'auto' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-            <Chip label="Gmail Connected ✓" size="small" sx={{ background: '#00C9A720', color: '#00C9A7', fontWeight: 600 }} />
+            <Chip label="Gmail Connected ✓" size="small" sx={{ background: '#10B98120', color: '#10B981', fontWeight: 600 }} />
             <Button onClick={handleDisconnect} sx={{ color: theme.palette.text.secondary, textTransform: 'none', fontSize: 12, p: 0, minWidth: 'auto' }}>
               Disconnect
             </Button>
@@ -210,7 +210,7 @@ export default function ArthyaSmartSync() {
 
           {/* Day range selector */}
           <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Typography fontSize={12} color="#4A6080">Period:</Typography>
+            <Typography fontSize={12} color="#94A3B8">Period:</Typography>
             {[7, 15, 30, 60, 90].map(d => (
               <Chip
                 key={d}
@@ -218,10 +218,10 @@ export default function ArthyaSmartSync() {
                 size="small"
                 onClick={() => { setDays(d); setFetchMode('all'); }}
                 sx={{
-                  background: days === d && fetchMode === 'all' ? '#00C9A720' : 'transparent',
-                  color: days === d && fetchMode === 'all' ? '#00C9A7' : '#4A6080',
+                  background: days === d && fetchMode === 'all' ? '#10B98120' : 'transparent',
+                  color: days === d && fetchMode === 'all' ? '#10B981' : '#94A3B8',
                   border: '1px solid',
-                  borderColor: days === d && fetchMode === 'all' ? '#00C9A730' : '#1E2D45',
+                  borderColor: days === d && fetchMode === 'all' ? '#10B98130' : '#1E293B',
                   cursor: 'pointer',
                   fontSize: '11px',
                 }}
@@ -232,10 +232,10 @@ export default function ArthyaSmartSync() {
               size="small"
               onClick={() => setFetchMode('incremental')}
               sx={{
-                background: fetchMode === 'incremental' ? '#0EA5E920' : 'transparent',
-                color: fetchMode === 'incremental' ? '#0EA5E9' : '#4A6080',
+                background: fetchMode === 'incremental' ? '#14B8A620' : 'transparent',
+                color: fetchMode === 'incremental' ? '#14B8A6' : '#94A3B8',
                 border: '1px solid',
-                borderColor: fetchMode === 'incremental' ? '#0EA5E930' : '#1E2D45',
+                borderColor: fetchMode === 'incremental' ? '#14B8A630' : '#1E293B',
                 cursor: 'pointer',
                 fontSize: '11px',
               }}
@@ -248,7 +248,7 @@ export default function ArthyaSmartSync() {
             onClick={() => fetchMutation.mutate()}
             disabled={fetchMutation.isPending}
             sx={{
-              background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+              background: 'linear-gradient(135deg, #10B981, #14B8A6)',
               borderRadius: '12px',
               py: 1.5,
               textTransform: 'none',
@@ -272,24 +272,24 @@ export default function ArthyaSmartSync() {
         <>
           {/* Debug info bar */}
           {fetchResult && (
-            <Box sx={{ background: '#0B1120', border: '1px solid #1E2D45', borderRadius: '10px', p: 2, mb: 2, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+            <Box sx={{ background: '#020617', border: '1px solid #1E293B', borderRadius: '10px', p: 2, mb: 2, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
               <Box>
-                <Typography fontSize={11} color="#4A6080">Emails Scanned</Typography>
-                <Typography fontSize={15} fontWeight={600} color="#F0F6FF">{fetchResult.emails_scanned || 0}</Typography>
+                <Typography fontSize={11} color="#94A3B8">Emails Scanned</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#F1F5F9">{fetchResult.emails_scanned || 0}</Typography>
               </Box>
               <Box>
-                <Typography fontSize={11} color="#4A6080">Transactions Found</Typography>
-                <Typography fontSize={15} fontWeight={600} color="#00C9A7">{fetchResult.total || 0}</Typography>
+                <Typography fontSize={11} color="#94A3B8">Transactions Found</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#10B981">{fetchResult.total || 0}</Typography>
               </Box>
               <Box>
-                <Typography fontSize={11} color="#4A6080">Fetch Type</Typography>
-                <Typography fontSize={15} fontWeight={600} color="#0EA5E9">
+                <Typography fontSize={11} color="#94A3B8">Fetch Type</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#14B8A6">
                   {fetchResult.is_incremental ? 'New only' : `Last ${days} days`}
                 </Typography>
               </Box>
               {fetchResult.last_fetch_was && (
                 <Box>
-                  <Typography fontSize={11} color="#4A6080">Previous Fetch</Typography>
+                  <Typography fontSize={11} color="#94A3B8">Previous Fetch</Typography>
                   <Typography fontSize={13} fontWeight={500} color="#EF9F27">
                     {new Date(fetchResult.last_fetch_was).toLocaleString('en-IN')}
                   </Typography>
@@ -300,40 +300,40 @@ export default function ArthyaSmartSync() {
 
           {/* Empty state */}
           {transactions.length === 0 && !fetchMutation.isPending && fetchResult && (
-            <Box sx={{ textAlign: 'center', py: 5, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px', px: 3 }}>
+            <Box sx={{ textAlign: 'center', py: 5, background: '#0F172A', border: '1px solid #1E293B', borderRadius: '16px', px: 3 }}>
               <Typography fontSize={36} mb={2}>
                 {fetchResult.emails_scanned > 0 ? '🔍' : '📭'}
               </Typography>
-              <Typography fontSize={16} fontWeight={600} color="#F0F6FF" mb={1}>
+              <Typography fontSize={16} fontWeight={600} color="#F1F5F9" mb={1}>
                 {fetchResult.emails_scanned > 0
                   ? `Scanned ${fetchResult.emails_scanned} emails but no bank transactions detected`
                   : 'No bank emails found in this period'
                 }
               </Typography>
-              <Typography fontSize={13} color="#4A6080" mb={2}>
+              <Typography fontSize={13} color="#94A3B8" mb={2}>
                 {fetchResult.is_incremental
                   ? 'No new bank transactions since your last fetch.'
                   : `Searched the last ${fetchResult.days_searched || days} days.`}
               </Typography>
 
               {/* Troubleshoot tips */}
-              <Box sx={{ background: '#0B1120', border: '1px solid #1E2D45', borderRadius: '12px', p: 2, mt: 1, textAlign: 'left' }}>
+              <Box sx={{ background: '#020617', border: '1px solid #1E293B', borderRadius: '12px', p: 2, mt: 1, textAlign: 'left' }}>
                 <Typography fontSize={13} fontWeight={500} color="#EF9F27" mb={1}>
                   💡 Troubleshooting tips:
                 </Typography>
-                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                <Typography fontSize={12} color="#94A3B8" mb={0.5}>
                   • Make sure your bank sends transaction alerts to this Gmail account
                 </Typography>
-                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                <Typography fontSize={12} color="#94A3B8" mb={0.5}>
                   • Check if bank SMS alerts are enabled — not all banks send email alerts
                 </Typography>
-                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                <Typography fontSize={12} color="#94A3B8" mb={0.5}>
                   • Try increasing the fetch period to 60 days
                 </Typography>
-                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                <Typography fontSize={12} color="#94A3B8" mb={0.5}>
                   • Check your Gmail inbox manually for emails with subject "debited" or "transaction"
                 </Typography>
-                <Typography fontSize={12} color="#4A6080">
+                <Typography fontSize={12} color="#94A3B8">
                   • Some banks only send SMS, not email alerts
                 </Typography>
               </Box>
@@ -342,7 +342,7 @@ export default function ArthyaSmartSync() {
                 <Chip
                   label="Try 60 days"
                   onClick={() => { setDays(60); setFetchMode('all'); setTimeout(() => fetchMutation.mutate(), 100); }}
-                  sx={{ background: '#0EA5E920', color: '#0EA5E9', border: '1px solid #0EA5E930', cursor: 'pointer' }}
+                  sx={{ background: '#14B8A620', color: '#14B8A6', border: '1px solid #14B8A630', cursor: 'pointer' }}
                 />
                 <Chip
                   label="Reset & Fetch All"
@@ -367,19 +367,19 @@ export default function ArthyaSmartSync() {
                       sx={{
                         display: 'flex', alignItems: 'center', gap: 2,
                         p: 2,
-                        background: selectedIds.has(txn.id) ? '#00C9A710' : '#111E33',
+                        background: selectedIds.has(txn.id) ? '#10B98110' : '#0F172A',
                         border: '1px solid',
-                        borderColor: selectedIds.has(txn.id) ? '#00C9A730' : '#1E2D45',
+                        borderColor: selectedIds.has(txn.id) ? '#10B98130' : '#1E293B',
                         borderRadius: '14px',
                         cursor: 'pointer',
                         transition: 'all 0.2s',
-                        '&:hover': { borderColor: selectedIds.has(txn.id) ? '#00C9A7' : '#2E3D55' },
+                        '&:hover': { borderColor: selectedIds.has(txn.id) ? '#10B981' : '#2E3D55' },
                       }}
                       onClick={() => toggleSelect(txn.id)}
                     >
                       <Checkbox
                         checked={selectedIds.has(txn.id)}
-                        sx={{ color: '#4A6080', '&.Mui-checked': { color: '#00C9A7' } }}
+                        sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#10B981' } }}
                       />
 
                       <Avatar sx={{
@@ -392,21 +392,21 @@ export default function ArthyaSmartSync() {
                       </Avatar>
 
                       <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography fontSize={14} fontWeight={600} color="#F0F6FF" noWrap>
+                        <Typography fontSize={14} fontWeight={600} color="#F1F5F9" noWrap>
                           {txn.merchant || 'Bank Transaction'}
                         </Typography>
-                        <Typography fontSize={12} color="#4A6080">
+                        <Typography fontSize={12} color="#94A3B8">
                           {txn.bank} · {new Date(txn.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </Typography>
                         {txn.raw_snippet && (
-                          <Typography fontSize={11} color="#4A6080" noWrap sx={{ mt: 0.25 }}>
+                          <Typography fontSize={11} color="#94A3B8" noWrap sx={{ mt: 0.25 }}>
                             {txn.raw_snippet}
                           </Typography>
                         )}
                       </Box>
 
                       <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                        <Typography fontSize={15} fontWeight={700} color={txn.type === 'credit' ? '#00C9A7' : '#E24B4A'}>
+                        <Typography fontSize={15} fontWeight={700} color={txn.type === 'credit' ? '#10B981' : '#EF4444'}>
                           {txn.type === 'credit' ? '+ ' : '- '}₹{Number(txn.amount).toLocaleString('en-IN')}
                         </Typography>
                         <Select
@@ -415,8 +415,8 @@ export default function ArthyaSmartSync() {
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) => updateCategory(txn.id, e.target.value)}
                           sx={{
-                            fontSize: '11px', color: '#00C9A7', mt: 0.5, minWidth: 120,
-                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#00C9A730' },
+                            fontSize: '11px', color: '#10B981', mt: 0.5, minWidth: 120,
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: '#10B98130' },
                             '& .MuiSelect-select': { py: '2px', px: '8px' },
                           }}
                         >
@@ -447,9 +447,9 @@ export default function ArthyaSmartSync() {
                   checked={selectedIds.size === transactions.length && transactions.length > 0}
                   indeterminate={selectedIds.size > 0 && selectedIds.size < transactions.length}
                   onChange={toggleSelectAll}
-                  sx={{ color: '#4A6080', '&.Mui-checked': { color: '#00C9A7' } }}
+                  sx={{ color: '#94A3B8', '&.Mui-checked': { color: '#10B981' } }}
                 />
-                <Typography sx={{ color: '#4A6080', fontSize: 13 }}>
+                <Typography sx={{ color: '#94A3B8', fontSize: 13 }}>
                   {selectedIds.size} of {transactions.length} selected
                 </Typography>
               </Box>
@@ -458,7 +458,7 @@ export default function ArthyaSmartSync() {
                 disabled={selectedIds.size === 0 || importMutation.isPending}
                 onClick={() => importMutation.mutate(selectedItems)}
                 sx={{
-                  background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                  background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                   borderRadius: '10px',
                   textTransform: 'none',
                   fontWeight: 600,

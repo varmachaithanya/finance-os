@@ -103,7 +103,7 @@ export default function WelcomeModal({
     >
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+          background: 'linear-gradient(135deg, #10B981, #14B8A6)',
           p: 3,
           pb: 4,
           position: 'relative',
@@ -195,7 +195,7 @@ export default function WelcomeModal({
             borderRadius: 2,
             backgroundColor: theme.palette.divider,
             '& .MuiLinearProgress-bar': {
-              background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+              background: 'linear-gradient(135deg, #10B981, #14B8A6)',
             },
           })}
         />
@@ -206,7 +206,7 @@ export default function WelcomeModal({
           <Button
             onClick={onClose}
             sx={{
-              color: '#00C9A7',
+              color: '#10B981',
               fontSize: 12,
               textTransform: 'none',
               p: 0,

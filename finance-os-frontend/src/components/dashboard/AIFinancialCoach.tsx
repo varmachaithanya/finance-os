@@ -17,12 +17,12 @@ export default function AIFinancialCoach({ predictionCount = 0, savingsCount = 0
 
   const cards = [
     {
-      icon: <AutoGraphIcon sx={{ fontSize: 28, color: '#00C9A7' }} />,
+      icon: <AutoGraphIcon sx={{ fontSize: 28, color: '#10B981' }} />,
       title: 'Expense Predictions',
       count: predictionCount,
       label: 'categories predicted',
       path: '/predictions',
-      color: '#00C9A7',
+      color: '#10B981',
     },
     {
       icon: <SavingsIcon sx={{ fontSize: 28, color: '#F59E0B' }} />,
@@ -33,20 +33,20 @@ export default function AIFinancialCoach({ predictionCount = 0, savingsCount = 0
       color: '#F59E0B',
     },
     {
-      icon: <WarningAmberIcon sx={{ fontSize: 28, color: '#E24B4A' }} />,
+      icon: <WarningAmberIcon sx={{ fontSize: 28, color: '#EF4444' }} />,
       title: 'Spending Alerts',
       count: anomalyCount,
       label: 'unresolved',
       path: '/spending-alerts',
-      color: '#E24B4A',
+      color: '#EF4444',
     },
     {
-      icon: <TrackChangesIcon sx={{ fontSize: 28, color: '#0EA5E9' }} />,
+      icon: <TrackChangesIcon sx={{ fontSize: 28, color: '#14B8A6' }} />,
       title: 'Debt Strategy',
       count: hasDebtPlan ? 1 : 0,
       label: hasDebtPlan ? 'plan ready' : 'no debts',
       path: '/debt-optimizer',
-      color: '#0EA5E9',
+      color: '#14B8A6',
     },
   ];
 

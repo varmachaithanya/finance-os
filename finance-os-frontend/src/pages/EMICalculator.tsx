@@ -59,7 +59,7 @@ export default function EMICalculator() {
             <Box mb={3}>
               <Typography fontSize={13} color="text.secondary" mb={1}>Tenure: {tenureYears} years ({tenureYears * 12} months)</Typography>
               <Slider value={tenureYears} onChange={(_, v) => setTenureYears(v as number)} min={1} max={30} step={1}
-                sx={{ color: '#0EA5E9' }} />
+                sx={{ color: '#14B8A6' }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography fontSize={11} color="text.secondary">1 year</Typography>
                 <Typography fontSize={11} color="text.secondary">30 years</Typography>
@@ -68,7 +68,7 @@ export default function EMICalculator() {
 
             <Button fullWidth variant="contained" onClick={() => calcMutation.mutate()} disabled={calcMutation.isPending}
               sx={{ borderRadius: '12px', py: 1.5, textTransform: 'none', fontWeight: 600,
-                background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)' }}>
+                background: 'linear-gradient(135deg, #10B981, #14B8A6)' }}>
               Calculate EMI
             </Button>
           </Paper>
@@ -93,7 +93,7 @@ export default function EMICalculator() {
                 <Grid item xs={4}>
                   <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '14px', background: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
                     <Typography fontSize={11} color="text.secondary">Total Payment</Typography>
-                    <Typography fontSize={22} fontWeight={700} color="#E24B4A">{fmtCurrency(result.total_payment)}</Typography>
+                    <Typography fontSize={22} fontWeight={700} color="#EF4444">{fmtCurrency(result.total_payment)}</Typography>
                   </Paper>
                 </Grid>
               </Grid>
@@ -103,7 +103,7 @@ export default function EMICalculator() {
               </Paper>
 
               <Button variant="outlined" onClick={handleAddToDebts}
-                sx={{ borderRadius: '12px', textTransform: 'none', borderColor: '#00C9A7', color: '#00C9A7' }}>
+                sx={{ borderRadius: '12px', textTransform: 'none', borderColor: '#10B981', color: '#10B981' }}>
                 + Add to Debt Tracker
               </Button>
 

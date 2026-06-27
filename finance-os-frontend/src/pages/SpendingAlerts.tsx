@@ -9,9 +9,9 @@ import PageHeader from '@/components/common/PageHeader';
 import { aiService } from '@/services/aiService';
 
 const severityConfig: Record<string, { color: string; bg: string; icon: React.ReactNode }> = {
-  high: { color: '#E24B4A', bg: '#E24B4A20', icon: <ErrorIcon sx={{ fontSize: 20, color: '#E24B4A' }} /> },
+  high: { color: '#EF4444', bg: '#EF444420', icon: <ErrorIcon sx={{ fontSize: 20, color: '#EF4444' }} /> },
   medium: { color: '#F59E0B', bg: '#F59E0B20', icon: <WarningAmberIcon sx={{ fontSize: 20, color: '#F59E0B' }} /> },
-  low: { color: '#0EA5E9', bg: '#0EA5E920', icon: <InfoIcon sx={{ fontSize: 20, color: '#0EA5E9' }} /> },
+  low: { color: '#14B8A6', bg: '#14B8A620', icon: <InfoIcon sx={{ fontSize: 20, color: '#14B8A6' }} /> },
 };
 
 export default function SpendingAlerts() {
@@ -38,7 +38,7 @@ export default function SpendingAlerts() {
         icon="⚡"
         actions={
           data && data.unread_count > 0 ? (
-            <Chip label={`${data.unread_count} unresolved`} size="small" sx={{ background: '#E24B4A20', color: '#E24B4A', fontWeight: 600 }} />
+            <Chip label={`${data.unread_count} unresolved`} size="small" sx={{ background: '#EF444420', color: '#EF4444', fontWeight: 600 }} />
           ) : undefined
         }
       />
@@ -64,14 +64,14 @@ export default function SpendingAlerts() {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, flexWrap: 'wrap' }}>
                     <Typography fontWeight={600} fontSize={14} color="text.primary">{a.title}</Typography>
                     <Chip label={a.severity.toUpperCase()} size="small" sx={{ fontSize: 10, fontWeight: 700, background: cfg.bg, color: cfg.color }} />
-                    {a.category_name && <Chip label={a.category_name} size="small" sx={{ fontSize: 10, background: '#0EA5E920', color: '#0EA5E9' }} />}
+                    {a.category_name && <Chip label={a.category_name} size="small" sx={{ fontSize: 10, background: '#14B8A620', color: '#14B8A6' }} />}
                   </Box>
                   <Typography fontSize={13} color="text.secondary">{a.message}</Typography>
                   <Typography fontSize={11} color="text.secondary" mt={0.5}>
                     {new Date(a.created_at).toLocaleString('en-IN')}
                   </Typography>
                 </Box>
-                <IconButton size="small" onClick={() => resolveMutation.mutate(a.id)} sx={{ color: '#00C9A7' }}>
+                <IconButton size="small" onClick={() => resolveMutation.mutate(a.id)} sx={{ color: '#10B981' }}>
                   <CheckCircleIcon fontSize="small" />
                 </IconButton>
               </Box>

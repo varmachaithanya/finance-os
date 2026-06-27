@@ -101,9 +101,9 @@ const IncomeVsExpenseChart: React.FC<IncomeVsExpenseChartProps> = ({ data }) => 
           <Legend
             wrapperStyle={{ fontSize: '12px', color: theme.palette.text.secondary }}/>
           <Bar dataKey="income" name="Income"
-            fill="#00C9A7" radius={[6,6,0,0]} maxBarSize={32}/>
+            fill="#10B981" radius={[6,6,0,0]} maxBarSize={32}/>
           <Bar dataKey="expenses" name="Expenses"
-            fill="#E24B4A" radius={[6,6,0,0]} maxBarSize={32}/>
+            fill="#EF4444" radius={[6,6,0,0]} maxBarSize={32}/>
         </BarChart>
       </ResponsiveContainer>
     </Box>

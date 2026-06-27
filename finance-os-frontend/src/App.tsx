@@ -19,7 +19,7 @@ const Reports = lazy(() => import('./pages/Reports'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Insights = lazy(() => import('./pages/Insights'));
-const ArthyaSmartSync = lazy(() => import('./pages/WealthWiseSmartSync'));
+const SmartSync = lazy(() => import('./pages/SmartSync'));
 const GmailSuccess = lazy(() => import('./pages/GmailSuccess'));
 const Predictions = lazy(() => import('./pages/Predictions'));
 const SavingsSuggestions = lazy(() => import('./pages/SavingsSuggestions'));
@@ -69,7 +69,7 @@ const App = () => {
           <Route path="/notifications" element={<LazyLoad><Notifications /></LazyLoad>} />
           <Route path="/profile" element={<LazyLoad><Profile /></LazyLoad>} />
           <Route path="/insights" element={<LazyLoad><Insights /></LazyLoad>} />
-           <Route path="/smart-sync" element={<LazyLoad><ArthyaSmartSync /></LazyLoad>} />
+           <Route path="/smart-sync" element={<LazyLoad><SmartSync /></LazyLoad>} />
           <Route path="/gmail-success" element={<LazyLoad><GmailSuccess /></LazyLoad>} />
           <Route path="/predictions" element={<LazyLoad><Predictions /></LazyLoad>} />
           <Route path="/savings-suggestions" element={<LazyLoad><SavingsSuggestions /></LazyLoad>} />

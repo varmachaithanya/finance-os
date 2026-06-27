@@ -31,7 +31,7 @@ export default function DebtOptimizer() {
             <TextField label="Monthly Budget" type="number" size="small"
               value={monthlyBudget} onChange={e => setMonthlyBudget(Number(e.target.value))}
               sx={{ width: 200 }} InputProps={{ startAdornment: <Typography sx={{ mr: 0.5, color: 'text.secondary' }}>₹</Typography> }} />
-            <Chip label={`Best: ${data.best_strategy}`} size="small" sx={{ background: '#00C9A720', color: '#00C9A7', fontWeight: 600, textTransform: 'capitalize' }} />
+            <Chip label={`Best: ${data.best_strategy}`} size="small" sx={{ background: '#10B98120', color: '#10B981', fontWeight: 600, textTransform: 'capitalize' }} />
             <Chip label={`Save ₹${data.interest_saved.toLocaleString('en-IN')}`} size="small" sx={{ background: '#F59E0B20', color: '#F59E0B', fontWeight: 600 }} />
           </Box>
 
@@ -51,13 +51,13 @@ export default function DebtOptimizer() {
             <Grid item xs={6} sm={3}>
               <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '14px', background: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
                 <Typography fontSize={11} color="text.secondary">Avalanche Months</Typography>
-                <Typography fontSize={22} fontWeight={700} color="#00C9A7">{data.avalanche.months_to_debt_free}</Typography>
+                <Typography fontSize={22} fontWeight={700} color="#10B981">{data.avalanche.months_to_debt_free}</Typography>
               </Paper>
             </Grid>
             <Grid item xs={6} sm={3}>
               <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '14px', background: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
                 <Typography fontSize={11} color="text.secondary">Avalanche Interest</Typography>
-                <Typography fontSize={22} fontWeight={700} color="#00C9A7">{fmtCurrency(data.avalanche.total_interest_paid)}</Typography>
+                <Typography fontSize={22} fontWeight={700} color="#10B981">{fmtCurrency(data.avalanche.total_interest_paid)}</Typography>
               </Paper>
             </Grid>
           </Grid>

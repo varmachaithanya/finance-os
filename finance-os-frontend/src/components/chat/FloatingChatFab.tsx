@@ -1,27 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Fab, Badge, Box, keyframes, useMediaQuery, useTheme } from '@mui/material';
+import { Fab, Box, keyframes, useMediaQuery, useTheme } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
 import { useChatStore } from '@/app/chatStore';
-import { chatService } from '@/services/chatService';
 
-const pulse = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(0, 201, 167, 0.6); }
-  70% { box-shadow: 0 0 0 18px rgba(0, 201, 167, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 201, 167, 0); }
+const pulseRing = keyframes`
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
 `;
 
 const FloatChatFab: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { isOpen, toggleOpen, hasOpened, recommendationCount, setRecommendationCount } = useChatStore();
+  const { isOpen, toggleOpen, hasOpened } = useChatStore();
   const [showPulse, setShowPulse] = useState(!hasOpened);
-
-  useEffect(() => {
-    chatService.getRecommendationCount()
-      .then((data) => setRecommendationCount(data.count))
-      .catch(() => {});
-  }, [setRecommendationCount]);
 
   useEffect(() => {
     if (!hasOpened) {
@@ -32,35 +24,43 @@ const FloatChatFab: React.FC = () => {
 
   return (
     <Box sx={{ position: 'fixed', bottom: isMobile ? 88 : 24, right: 24, zIndex: 1300, pb: 'env(safe-area-inset-bottom)' }}>
-      <Badge
-        badgeContent={recommendationCount}
-        color="error"
-        overlap="circular"
-        sx={{ '& .MuiBadge-badge': { fontSize: 11, minWidth: 18, height: 18 } }}
-      >
-        <Fab
-          color="primary"
-          aria-label="Arthya Coach"
-          onClick={toggleOpen}
+      {showPulse && (
+        <Box
           sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
             width: 56,
             height: 56,
-            background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
-            color: '#fff',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            animation: !hasOpened && showPulse ? `${pulse} 2s infinite` : 'none',
-            '&:hover': {
-              transform: 'scale(1.1)',
-              boxShadow: '0 8px 24px rgba(0, 201, 167, 0.4)',
-            },
-            '&:active': {
-              transform: 'scale(0.95)',
-            },
+            borderRadius: '50%',
+            background: 'rgba(16, 185, 129, 0.25)',
+            animation: `${pulseRing} 2s ease-out infinite`,
+            zIndex: -1,
+            pointerEvents: 'none',
           }}
-        >
-          {isOpen ? <CloseIcon /> : <SmartToyIcon />}
-        </Fab>
-      </Badge>
+        />
+      )}
+      <Fab
+        color="primary"
+        aria-label="Arthya Coach"
+        onClick={toggleOpen}
+        sx={{
+          width: 56,
+          height: 56,
+          background: 'linear-gradient(135deg, #10B981, #14B8A6)',
+          color: '#fff',
+          transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+          '&:hover': {
+            transform: 'scale(1.1)',
+            boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+        }}
+      >
+        {isOpen ? <CloseIcon /> : <SmartToyIcon />}
+      </Fab>
     </Box>
   );
 };

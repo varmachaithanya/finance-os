@@ -63,7 +63,7 @@ export default function ResetPassword() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0B1120',
+        backgroundColor: '#020617',
         p: 2,
       }}
     >
@@ -71,8 +71,8 @@ export default function ResetPassword() {
         sx={{
           width: '100%',
           maxWidth: 400,
-          backgroundColor: '#111E33',
-          border: '1px solid #1E2D45',
+          backgroundColor: '#0F172A',
+          border: '1px solid #1E293B',
           borderRadius: '20px',
           p: { xs: 3, sm: 5 },
         }}
@@ -84,7 +84,7 @@ export default function ResetPassword() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 0.5,
-            color: '#00C9A7',
+            color: '#10B981',
             fontSize: 13,
             textDecoration: 'none',
             mb: 3,
@@ -104,13 +104,13 @@ export default function ResetPassword() {
               width: 64,
               height: 64,
               borderRadius: '16px',
-              background: '#00C9A715',
+              background: '#10B98115',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00C9A7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
@@ -118,13 +118,13 @@ export default function ResetPassword() {
         </Box>
 
         <Typography
-          sx={{ fontSize: 22, fontWeight: 700, color: '#F0F6FF', textAlign: 'center', mb: 1 }}
+          sx={{ fontSize: 22, fontWeight: 700, color: '#F1F5F9', textAlign: 'center', mb: 1 }}
         >
           Set new password
         </Typography>
 
         <Typography
-          sx={{ fontSize: 13, color: '#4A6080', textAlign: 'center', mb: 3.5, lineHeight: 1.5 }}
+          sx={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', mb: 3.5, lineHeight: 1.5 }}
         >
           Enter your new password below.
         </Typography>
@@ -134,18 +134,18 @@ export default function ResetPassword() {
             severity="success"
             sx={{
               mb: 2,
-              backgroundColor: '#00C9A715',
-              color: '#00C9A7',
-              border: '1px solid #00C9A730',
+              backgroundColor: '#10B98115',
+              color: '#10B981',
+              border: '1px solid #10B98130',
               borderRadius: '12px',
-              '& .MuiAlert-icon': { color: '#00C9A7' },
+              '& .MuiAlert-icon': { color: '#10B981' },
             }}
           >
             Password reset successfully.{' '}
             <Link
               component={RouterLink}
               to="/login"
-              sx={{ color: '#00C9A7', fontWeight: 600, textDecoration: 'underline' }}
+              sx={{ color: '#10B981', fontWeight: 600, textDecoration: 'underline' }}
             >
               Sign in
             </Link>
@@ -158,11 +158,11 @@ export default function ResetPassword() {
             onClose={() => setApiError(null)}
             sx={{
               mb: 2,
-              backgroundColor: '#E24B4A15',
-              color: '#E24B4A',
-              border: '1px solid #E24B4A30',
+              backgroundColor: '#EF444415',
+              color: '#EF4444',
+              border: '1px solid #EF444430',
               borderRadius: '12px',
-              '& .MuiAlert-icon': { color: '#E24B4A' },
+              '& .MuiAlert-icon': { color: '#EF4444' },
             }}
           >
             {apiError}
@@ -226,7 +226,7 @@ export default function ResetPassword() {
               type="submit"
               disabled={isSubmitting || !token}
               sx={{
-                background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                 borderRadius: '12px',
                 py: '14px',
                 color: '#fff',
@@ -235,7 +235,7 @@ export default function ResetPassword() {
                 textTransform: 'none',
                 mt: 2,
                 '&:hover': { background: 'linear-gradient(135deg, #00B898, #0D94D0)' },
-                '&.Mui-disabled': { background: 'linear-gradient(135deg, #00C9A780, #0EA5E980)', color: '#fff' },
+                '&.Mui-disabled': { background: 'linear-gradient(135deg, #10B98180, #14B8A680)', color: '#fff' },
               }}
             >
               {isSubmitting ? <CircularProgress size={20} sx={{ color: '#fff' }} /> : 'Reset Password'}
@@ -244,12 +244,12 @@ export default function ResetPassword() {
         )}
 
         <Box sx={{ textAlign: 'center', mt: 3 }}>
-          <Typography sx={{ fontSize: 12, color: '#4A6080' }}>
+          <Typography sx={{ fontSize: 12, color: '#94A3B8' }}>
             Remembered your password?{' '}
             <Link
               component={RouterLink}
               to="/login"
-              sx={{ color: '#00C9A7', fontSize: 12, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              sx={{ color: '#10B981', fontSize: 12, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
             >
               Sign in
             </Link>

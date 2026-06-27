@@ -5,11 +5,11 @@ interface PasswordStrengthBarProps {
 }
 
 const colors = {
-  0: { bar: '#E24B4A', label: 'Weak', text: '#E24B4A' },
+  0: { bar: '#EF4444', label: 'Weak', text: '#EF4444' },
   1: { bar: '#EF9F27', label: 'Fair', text: '#EF9F27' },
-  2: { bar: '#00C9A7', label: 'Good', text: '#00C9A7' },
-  3: { bar: '#00C9A7', label: 'Strong', text: '#00C9A7' },
-  4: { bar: '#00C9A7', label: 'Strong', text: '#00C9A7' },
+  2: { bar: '#10B981', label: 'Good', text: '#10B981' },
+  3: { bar: '#10B981', label: 'Strong', text: '#10B981' },
+  4: { bar: '#10B981', label: 'Strong', text: '#10B981' },
 };
 
 function getScore(pw: string): number {
@@ -36,7 +36,7 @@ export default function PasswordStrengthBar({ password }: PasswordStrengthBarPro
               flex: 1,
               height: 4,
               borderRadius: 2,
-              backgroundColor: i < score ? info.bar : '#1E2D45',
+              backgroundColor: i < score ? info.bar : '#1E293B',
               transition: 'background-color 0.2s',
             }}
           />

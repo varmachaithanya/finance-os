@@ -337,11 +337,11 @@ export default function Profile() {
         <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" fontWeight={600} mb={3}>
-                <FingerprintIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#00C9A7' }} />
+                <FingerprintIcon sx={{ verticalAlign: 'middle', mr: 1, color: '#10B981' }} />
                 Biometric Authentication
               </Typography>
               {bioError && (
-                <Alert severity="error" sx={{ mb: 2, backgroundColor: '#E24B4A15', color: '#E24B4A', border: '1px solid #E24B4A30', borderRadius: '10px' }}>
+                <Alert severity="error" sx={{ mb: 2, backgroundColor: '#EF444415', color: '#EF4444', border: '1px solid #EF444430', borderRadius: '10px' }}>
                   {bioError}
                 </Alert>
               )}
@@ -350,25 +350,25 @@ export default function Profile() {
                   {bioCreds.map((cred) => (
                     <Box key={cred.id} sx={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      background: '#0B1120', borderRadius: '10px', p: '10px 14px',
+                      background: '#020617', borderRadius: '10px', p: '10px 14px',
                     }}>
                       <Box>
-                        <Typography sx={{ color: '#F0F6FF', fontSize: 14, fontWeight: 500 }}>
+                        <Typography sx={{ color: '#F1F5F9', fontSize: 14, fontWeight: 500 }}>
                           {cred.device_name}
                         </Typography>
-                        <Typography sx={{ color: '#4A6080', fontSize: 12 }}>
+                        <Typography sx={{ color: '#94A3B8', fontSize: 12 }}>
                           Added {cred.created_at ? new Date(cred.created_at).toLocaleDateString() : ''}
                         </Typography>
                       </Box>
                       <IconButton size="small" onClick={() => handleBioDelete(cred.id)} disabled={bioLoading}
-                        sx={{ color: '#E24B4A' }}>
+                        sx={{ color: '#EF4444' }}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Box>
                   ))}
                 </Box>
               ) : (
-                <Typography sx={{ color: '#4A6080', fontSize: 14, mb: 2 }}>
+                <Typography sx={{ color: '#94A3B8', fontSize: 14, mb: 2 }}>
                   No biometric credentials registered. Use your fingerprint or face for quick sign-in.
                 </Typography>
               )}
@@ -379,7 +379,7 @@ export default function Profile() {
                 onClick={handleBioEnroll}
                 fullWidth
                 sx={{
-                  background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                  background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                   borderRadius: '12px',
                   color: '#fff',
                   textTransform: 'none',
@@ -392,8 +392,8 @@ export default function Profile() {
           </Grid>
         <Grid item xs={12}>
           <Paper sx={{ p: 3, border: '1px solid rgba(226, 75, 74, 0.3)' }}>
-            <Typography variant="h6" fontWeight={600} mb={1} color="#E24B4A">Danger Zone</Typography>
-            <Typography sx={{ color: '#4A6080', fontSize: 14, mb: 2 }}>
+            <Typography variant="h6" fontWeight={600} mb={1} color="#EF4444">Danger Zone</Typography>
+            <Typography sx={{ color: '#94A3B8', fontSize: 14, mb: 2 }}>
               Permanently delete your account and all associated data. This action cannot be undone.
             </Typography>
             <Button
@@ -410,14 +410,14 @@ export default function Profile() {
         </Grid>
       </Grid>
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle sx={{ color: '#E24B4A', fontWeight: 700 }}>Delete Account</DialogTitle>
+        <DialogTitle sx={{ color: '#EF4444', fontWeight: 700 }}>Delete Account</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: '#4A6080' }}>
+          <DialogContentText sx={{ color: '#94A3B8' }}>
             Are you sure you want to delete your account? This will permanently remove all your data including expenses, income, budgets, credit cards, debts, subscriptions, and settings. This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#4A6080', textTransform: 'none' }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} sx={{ color: '#94A3B8', textTransform: 'none' }}>
             Cancel
           </Button>
           <Button

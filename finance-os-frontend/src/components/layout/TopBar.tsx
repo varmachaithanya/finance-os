@@ -21,6 +21,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/app/store';
 import { getUnreadCount } from '@/services/notificationService';
+import ArthyaLogo from '@/components/common/ArthyaLogo';
 
 interface TopBarProps {
   onMenuClick: () => void;
@@ -92,27 +93,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
         >
           <MenuIcon />
         </IconButton>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexGrow: 1 }}>
-          <Box
-            sx={{
-              width: 32,
-              height: 32,
-              borderRadius: '8px',
-              background: '#0F172A',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <Typography sx={{ color: '#D4AF37', fontWeight: 800, fontSize: 18, lineHeight: 1, letterSpacing: 0 }}>
-              A
-            </Typography>
-          </Box>
-          <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700, letterSpacing: '-0.3px' }}>
-            Arthya
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <ArthyaLogo size={32} textVariant="h6" />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton color="inherit" onClick={() => navigate('/notifications')}>

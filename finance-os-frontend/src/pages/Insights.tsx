@@ -12,25 +12,25 @@ const fmt = (n: number) =>
   new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(n);
 
 const insightBorder: Record<string, string> = {
-  positive: '2px solid #00C9A7',
+  positive: '2px solid #10B981',
   warning: '2px solid #F59E0B',
-  danger: '2px solid #E24B4A',
-  info: '2px solid #0EA5E9',
+  danger: '2px solid #EF4444',
+  info: '2px solid #14B8A6',
   tip: '2px solid #8B5CF6',
 };
 
 const insightBg: Record<string, string> = {
-  positive: '#00C9A710',
+  positive: '#10B98110',
   warning: '#F59E0B10',
-  danger: '#E24B4A10',
-  info: '#0EA5E910',
+  danger: '#EF444410',
+  info: '#14B8A610',
   tip: '#8B5CF610',
 };
 
 const savingsColor = (rate: number) => {
-  if (rate >= 30) return '#00C9A7';
+  if (rate >= 30) return '#10B981';
   if (rate >= 20) return '#F59E0B';
-  return '#E24B4A';
+  return '#EF4444';
 };
 
 function CircularGauge({ value, color, label, theme }: { value: number; color: string; label: string; theme: any }) {
@@ -116,10 +116,10 @@ export default function Insights() {
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Income" value={data.total_income} icon="💰" color="#00C9A7" />
+          <StatCard title="Total Income" value={data.total_income} icon="💰" color="#10B981" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Expenses" value={data.total_expenses} icon="💸" color="#E24B4A" />
+          <StatCard title="Total Expenses" value={data.total_expenses} icon="💸" color="#EF4444" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={{ p: 3, background: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, borderRadius: '16px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -156,8 +156,8 @@ export default function Insights() {
                     size="small"
                     sx={{
                       height: 20, fontSize: 10,
-                      background: cat.trend === 'up' ? '#E24B4A20' : '#00C9A720',
-                      color: cat.trend === 'up' ? '#E24B4A' : '#00C9A7',
+                      background: cat.trend === 'up' ? '#EF444420' : '#10B98120',
+                      color: cat.trend === 'up' ? '#EF4444' : '#10B981',
                       fontWeight: 600,
                     }}
                   />
@@ -176,20 +176,20 @@ export default function Insights() {
                 <AreaChart data={data.monthly_trend}>
                   <defs>
                     <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00C9A7" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#00C9A7" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#10B981" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#E24B4A" stopOpacity={0.4} />
-                      <stop offset="100%" stopColor="#E24B4A" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#EF4444" stopOpacity={0.4} />
+                      <stop offset="100%" stopColor="#EF4444" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke={theme.palette.divider} strokeDasharray="3 3" />
                   <XAxis dataKey="month" tick={{ fill: theme.palette.text.secondary, fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={(v: number) => `₹${(v / 1000).toFixed(0)}k`} tick={{ fill: theme.palette.text.secondary, fontSize: 11 }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="income" stroke="#00C9A7" fill="url(#incomeGrad)" strokeWidth={2} name="Income" />
-                  <Area type="monotone" dataKey="expenses" stroke="#E24B4A" fill="url(#expenseGrad)" strokeWidth={2} name="Expenses" />
+                  <Area type="monotone" dataKey="income" stroke="#10B981" fill="url(#incomeGrad)" strokeWidth={2} name="Income" />
+                  <Area type="monotone" dataKey="expenses" stroke="#EF4444" fill="url(#expenseGrad)" strokeWidth={2} name="Expenses" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
@@ -211,7 +211,7 @@ export default function Insights() {
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="savings" name="Savings" radius={[6, 6, 0, 0]}>
                     {data.monthly_trend.map((entry, i) => (
-                      <Cell key={i} fill={entry.savings >= 0 ? '#00C9A7' : '#E24B4A'} />
+                      <Cell key={i} fill={entry.savings >= 0 ? '#10B981' : '#EF4444'} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -249,8 +249,8 @@ export default function Insights() {
                       label={item.action}
                       size="small"
                       sx={{
-                        background: '#00C9A720',
-                        color: '#00C9A7',
+                        background: '#10B98120',
+                        color: '#10B981',
                         fontWeight: 600,
                         borderRadius: '8px',
                         cursor: 'pointer',

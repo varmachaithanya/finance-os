@@ -96,13 +96,13 @@ const ChatPanel: React.FC = () => {
           gap: 1.5,
           borderBottom: 1,
           borderColor: 'divider',
-          background: 'linear-gradient(135deg, #00C9A710, #0EA5E910)',
+          background: 'linear-gradient(135deg, rgba(16,185,129,0.06), rgba(20,184,166,0.06))',
         }}
       >
         <Avatar
           sx={{
             bgcolor: 'transparent',
-            background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+            background: 'linear-gradient(135deg, #10B981, #14B8A6)',
             width: 40,
             height: 40,
           }}
@@ -114,7 +114,7 @@ const ChatPanel: React.FC = () => {
             Arthya AI Coach
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#00C9A7', display: 'inline-block' }} />
+            <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: 'success.main', display: 'inline-block' }} />
             Online
           </Typography>
         </Box>
@@ -133,7 +133,7 @@ const ChatPanel: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           gap: 1.5,
-          bgcolor: theme.palette.mode === 'dark' ? '#0B1120' : '#F8FAFC',
+          bgcolor: theme.palette.mode === 'dark' ? '#020617' : '#F8FAFC',
         }}
       >
         {messages.length === 0 && (
@@ -148,7 +148,7 @@ const ChatPanel: React.FC = () => {
               color: 'text.secondary',
             }}
           >
-            <SmartToyIcon sx={{ fontSize: 48, color: '#D4AF37', opacity: 0.7 }} />
+            <SmartToyIcon sx={{ fontSize: 48, color: '#10B981', opacity: 0.5 }} />
             <Typography variant="body2" color="text.secondary" textAlign="center">
               Hello, I'm Arthya Coach.
             </Typography>
@@ -172,7 +172,7 @@ const ChatPanel: React.FC = () => {
                   width: 28,
                   height: 28,
                   bgcolor: 'transparent',
-                  background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                  background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                   mt: 0.5,
                 }}
               >
@@ -185,7 +185,7 @@ const ChatPanel: React.FC = () => {
                 px: 1.5,
                 py: 1,
                 borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                bgcolor: msg.role === 'user' ? '#00C9A7' : 'background.default',
+                bgcolor: msg.role === 'user' ? 'primary.main' : 'background.default',
                 color: msg.role === 'user' ? '#fff' : 'text.primary',
                 fontSize: 14,
                 lineHeight: 1.5,
@@ -203,7 +203,7 @@ const ChatPanel: React.FC = () => {
         ))}
         {isLoading && (
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', pl: 0.5 }}>
-            <CircularProgress size={16} sx={{ color: '#00C9A7' }} />
+            <CircularProgress size={16} sx={{ color: 'primary.main' }} />
             <Typography variant="caption" color="text.secondary">Thinking...</Typography>
           </Box>
         )}
@@ -233,9 +233,9 @@ const ChatPanel: React.FC = () => {
               fontSize: 11,
               fontWeight: 600,
               borderRadius: '8px',
-              bgcolor: theme.palette.mode === 'dark' ? '#1E2D45' : '#E8F5E9',
-              color: '#00C9A7',
-              '&:hover': { bgcolor: '#00C9A720' },
+              bgcolor: theme.palette.mode === 'dark' ? '#1E293B' : '#ECFDF5',
+              color: 'primary.main',
+              '&:hover': { bgcolor: theme.palette.mode === 'dark' ? '#10B98120' : '#D1FAE5' },
             }}
           />
         ))}
@@ -257,7 +257,7 @@ const ChatPanel: React.FC = () => {
           sx={{
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
-              bgcolor: theme.palette.mode === 'dark' ? '#111E33' : '#F1F5F9',
+              bgcolor: theme.palette.mode === 'dark' ? '#1E293B' : '#F1F5F9',
               '& fieldset': { border: 'none' },
             },
           }}
@@ -269,9 +269,9 @@ const ChatPanel: React.FC = () => {
                   disabled={!input.trim() || isLoading}
                   size="small"
                   sx={{
-                    bgcolor: input.trim() ? '#00C9A7' : 'transparent',
+                    bgcolor: input.trim() ? 'primary.main' : 'transparent',
                     color: input.trim() ? '#fff' : 'text.disabled',
-                    '&:hover': { bgcolor: input.trim() ? '#00B898' : 'transparent' },
+                    '&:hover': { bgcolor: input.trim() ? '#059669' : 'transparent' },
                     width: 32,
                     height: 32,
                   }}

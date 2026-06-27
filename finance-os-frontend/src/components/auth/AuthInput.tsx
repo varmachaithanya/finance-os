@@ -40,7 +40,7 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
   ) => {
     const [focused, setFocused] = useState(false);
 
-    const borderColor = error ? '#E24B4A' : focused ? '#00C9A7' : value ? '#00C9A7' : '#1E2D45';
+    const borderColor = error ? '#EF4444' : focused ? '#10B981' : value ? '#10B981' : '#1E293B';
 
     return (
       <Box sx={{ mb: 2.5 }}>
@@ -48,7 +48,7 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
           sx={{
             fontSize: 11,
             fontWeight: 500,
-            color: '#4A6080',
+            color: '#94A3B8',
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
             mb: 0.75,
@@ -61,7 +61,7 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
-            backgroundColor: '#111E33',
+            backgroundColor: '#0F172A',
             border: `1px solid ${borderColor}`,
             borderRadius: '12px',
             transition: 'border-color 0.2s',
@@ -74,7 +74,7 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
               left: 14,
               display: 'flex',
               alignItems: 'center',
-              color: error ? '#E24B4A' : focused ? '#00C9A7' : '#4A6080',
+              color: error ? '#EF4444' : focused ? '#10B981' : '#94A3B8',
               pointerEvents: 'none',
               transition: 'color 0.2s',
             }}
@@ -101,8 +101,8 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
               mr: endAdornment ? '40px' : '14px',
               my: '12px',
               fontSize: 14,
-              color: '#F0F6FF',
-              '& input::placeholder': { color: '#4A6080', opacity: 0.6 },
+              color: '#F1F5F9',
+              '& input::placeholder': { color: '#94A3B8', opacity: 0.6 },
               '&.Mui-disabled': { opacity: 0.5 },
             }}
           />
@@ -113,30 +113,30 @@ const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
         {error && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="6" cy="6" r="5.5" stroke="#E24B4A" strokeWidth="1" />
+              <circle cx="6" cy="6" r="5.5" stroke="#EF4444" strokeWidth="1" />
               <path
                 d="M6 3.5v3M6 8v.5"
-                stroke="#E24B4A"
+                stroke="#EF4444"
                 strokeWidth="1.2"
                 strokeLinecap="round"
               />
             </svg>
-            <Typography sx={{ fontSize: 11, color: '#E24B4A' }}>{error}</Typography>
+            <Typography sx={{ fontSize: 11, color: '#EF4444' }}>{error}</Typography>
           </Box>
         )}
         {showValid && !error && value && (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="6" cy="6" r="5.5" stroke="#00C9A7" strokeWidth="1" />
+              <circle cx="6" cy="6" r="5.5" stroke="#10B981" strokeWidth="1" />
               <path
                 d="M3.5 6l2 2 3-3"
-                stroke="#00C9A7"
+                stroke="#10B981"
                 strokeWidth="1.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
-            <Typography sx={{ fontSize: 11, color: '#00C9A7' }}>{validMessage}</Typography>
+            <Typography sx={{ fontSize: 11, color: '#10B981' }}>{validMessage}</Typography>
           </Box>
         )}
       </Box>

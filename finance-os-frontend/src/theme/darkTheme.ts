@@ -32,7 +32,18 @@ export const darkTheme = createTheme({
     divider: colors.border,
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Plus Jakarta Sans", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700 },
+    h2: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 700 },
+    h3: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 },
+    h4: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 },
+    h5: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 },
+    h6: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 },
+    subtitle1: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 500 },
+    subtitle2: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 500 },
+    body1: { fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif', fontWeight: 400 },
+    body2: { fontFamily: '"Plus Jakarta Sans", "Inter", sans-serif', fontWeight: 400 },
+    button: { fontFamily: '"Plus Jakarta Sans", sans-serif', fontWeight: 600 },
   },
   shape: {
     borderRadius: 8,
@@ -190,12 +201,12 @@ export const darkTheme = createTheme({
         root: {
           color: colors.textPrimary,
           '&:hover': {
-            backgroundColor: 'rgba(0, 201, 167, 0.08)',
+            backgroundColor: 'rgba(16, 185, 129, 0.08)',
           },
           '&.Mui-selected': {
-            backgroundColor: 'rgba(0, 201, 167, 0.15)',
+            backgroundColor: 'rgba(16, 185, 129, 0.15)',
             '&:hover': {
-              backgroundColor: 'rgba(0, 201, 167, 0.2)',
+              backgroundColor: 'rgba(16, 185, 129, 0.2)',
             },
           },
         },

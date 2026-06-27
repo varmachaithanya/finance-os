@@ -23,7 +23,7 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, tota
   const paidPct = tDebt > 0
     ? Math.round((tPaid / tDebt) * 100) : 0;
 
-  const radialData = [{ name: 'Paid', value: paidPct, fill: '#00C9A7' }];
+  const radialData = [{ name: 'Paid', value: paidPct, fill: '#10B981' }];
 
   const isEmpty = !data || data.length === 0;
 
@@ -89,7 +89,7 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, tota
               justifyContent: 'center',
               fontSize: 20,
               fontWeight: 700,
-              color: '#00C9A7',
+              color: '#10B981',
               pointerEvents: 'none',
             }}
           >
@@ -103,13 +103,13 @@ const DebtProgressChart: React.FC<DebtProgressChartProps> = ({ data, debts, tota
         <Box sx={{ flex: 1 }}>
           <Box sx={{ mb: 2 }}>
             <Typography fontSize={11} color="text.secondary">Total Debt</Typography>
-            <Typography fontSize={16} fontWeight={600} color="#E24B4A">
+            <Typography fontSize={16} fontWeight={600} color="#EF4444">
               {'\u20B9'}{tDebt.toLocaleString('en-IN')}
             </Typography>
           </Box>
           <Box sx={{ mb: 2 }}>
             <Typography fontSize={11} color="text.secondary">Total Paid</Typography>
-            <Typography fontSize={16} fontWeight={600} color="#00C9A7">
+            <Typography fontSize={16} fontWeight={600} color="#10B981">
               {'\u20B9'}{tPaid.toLocaleString('en-IN')}
             </Typography>
           </Box>

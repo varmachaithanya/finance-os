@@ -13,14 +13,14 @@ export default function ThemeToggle() {
       size="small"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
       sx={{
-        color: theme === 'dark' ? '#D4AF37' : '#0F172A',
+        color: theme === 'dark' ? '#10B981' : '#0F172A',
         border: '1px solid',
-        borderColor: theme === 'dark' ? '#1E2D45' : '#E2E8F0',
+        borderColor: theme === 'dark' ? '#1E293B' : '#E2E8F0',
         borderRadius: '10px',
         width: 36,
         height: 36,
         '&:hover': {
-          backgroundColor: theme === 'dark' ? '#1E2D45' : '#F1F5F9',
+          backgroundColor: theme === 'dark' ? '#1E293B' : '#F1F5F9',
         },
       }}
     >

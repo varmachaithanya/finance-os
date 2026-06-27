@@ -12,6 +12,7 @@ import {
   Link,
   IconButton,
   TextField,
+  useTheme,
 } from '@mui/material';
 import FingerprintIcon from '@mui/icons-material/Fingerprint';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -39,6 +40,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
+  const theme = useTheme();
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#0B1120',
+        bgcolor: 'background.default',
         p: 2,
       }}
     >
@@ -116,8 +118,9 @@ export default function Login() {
         sx={{
           width: '100%',
           maxWidth: 440,
-          backgroundColor: '#111E33',
-          border: '1px solid #1E2D45',
+          bgcolor: 'background.paper',
+          border: 1,
+          borderColor: 'divider',
           borderRadius: '20px',
           p: { xs: 2.5, sm: 5 },
           mx: 2,
@@ -135,9 +138,10 @@ export default function Login() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 0.5,
-            background: '#0EA5E910',
-            border: '1px solid #0EA5E930',
-            color: '#0EA5E9',
+            background: `${theme.palette.primary.main}15`,
+            border: 1,
+            borderColor: `${theme.palette.primary.main}30`,
+            color: 'primary.main',
             borderRadius: '20px',
             px: '12px',
             py: '4px',
@@ -154,34 +158,45 @@ export default function Login() {
         </Box>
 
         {/* Logo mark */}
-        <Box
-          sx={{
-            width: 52,
-            height: 52,
-            borderRadius: '16px',
-            background: '#0F172A',
-            border: '2px solid #D4AF37',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            mx: 'auto',
-            mb: 2,
-          }}
-        >
-          <Typography sx={{ color: '#D4AF37', fontWeight: 800, fontSize: 24, lineHeight: 1, fontFamily: '"Inter", sans-serif' }}>
-            A
-          </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+          <Box
+            sx={{
+              width: 56,
+              height: 56,
+              borderRadius: '16px',
+              background: '#0F172A',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                inset: 0,
+                borderRadius: 'inherit',
+                padding: '2.5px',
+                background: 'linear-gradient(135deg, #10B981, #14B8A6)',
+                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+              },
+            }}
+          >
+            <Typography sx={{ color: '#10B981', fontWeight: 800, fontSize: 26, lineHeight: 1, fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
+              A
+            </Typography>
+          </Box>
         </Box>
 
-        {/* App name */}
         <Typography
           sx={{
             fontSize: 24,
-            fontWeight: 700,
-            color: '#F0F6FF',
+            fontWeight: 800,
+            color: 'text.primary',
             letterSpacing: '-0.5px',
             textAlign: 'center',
             mb: 0.5,
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}
         >
           Arthya
@@ -191,7 +206,7 @@ export default function Login() {
         <Typography
           sx={{
             fontSize: 13,
-            color: '#4A6080',
+            color: 'text.secondary',
             textAlign: 'center',
             mb: 3.5,
           }}
@@ -206,11 +221,12 @@ export default function Login() {
             onClose={() => setApiError(null)}
             sx={{
               mb: 2,
-              backgroundColor: '#E24B4A15',
-              color: '#E24B4A',
-              border: '1px solid #E24B4A30',
+              backgroundColor: `${theme.palette.error.main}15`,
+              color: 'error.main',
+              border: 1,
+              borderColor: `${theme.palette.error.main}30`,
               borderRadius: '12px',
-              '& .MuiAlert-icon': { color: '#E24B4A' },
+              '& .MuiAlert-icon': { color: 'error.main' },
             }}
           >
             {apiError}
@@ -286,7 +302,7 @@ export default function Login() {
                   <IconButton
                     size="small"
                     onClick={() => setShowPassword((s) => !s)}
-                    sx={{ color: '#4A6080' }}
+                    sx={{ color: 'text.secondary' }}
                   >
                     {showPassword ? (
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -311,7 +327,7 @@ export default function Login() {
             <Link
               component={RouterLink}
               to="/forgot-password"
-              sx={{ color: '#00C9A7', fontSize: 12, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              sx={{ color: 'primary.main', fontSize: 12, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
             >
               Forgot password?
             </Link>
@@ -323,7 +339,7 @@ export default function Login() {
             type="submit"
             disabled={isSubmitting}
             sx={{
-              background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+              background: 'linear-gradient(135deg, #10B981, #14B8A6)',
               borderRadius: '12px',
               py: '14px',
               color: '#fff',
@@ -334,7 +350,7 @@ export default function Login() {
                 background: 'linear-gradient(135deg, #00B898, #0D94D0)',
               },
               '&.Mui-disabled': {
-                background: 'linear-gradient(135deg, #00C9A780, #0EA5E980)',
+                background: `linear-gradient(135deg, ${theme.palette.primary.main}80, ${theme.palette.secondary.main}80)`,
                 color: '#fff',
               },
             }}
@@ -351,14 +367,14 @@ export default function Login() {
               onClick={() => setShowBioEmail(true)}
               sx={{
                 mt: 2,
-                borderColor: '#1E2D45',
-                color: '#F0F6FF',
+                borderColor: 'divider',
+                color: 'text.primary',
                 borderRadius: '12px',
                 py: '12px',
                 textTransform: 'none',
                 fontSize: 14,
                 fontWeight: 500,
-                '&:hover': { borderColor: '#0EA5E9', backgroundColor: '#0EA5E910' },
+                '&:hover': { borderColor: 'primary.main', backgroundColor: `${theme.palette.primary.main}15` },
               }}
             >
               Sign in with Biometrics
@@ -374,11 +390,11 @@ export default function Login() {
                 onChange={(e) => setBioEmail(e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#0B1120',
-                    color: '#F0F6FF',
-                    '& fieldset': { borderColor: '#1E2D45' },
+                    bgcolor: 'background.default',
+                    color: 'text.primary',
+                    '& fieldset': { borderColor: 'divider' },
                   },
-                  '& .MuiInputLabel-root': { color: '#4A6080' },
+                  '& .MuiInputLabel-root': { color: 'text.secondary' },
                 }}
               />
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -389,7 +405,7 @@ export default function Login() {
                   onClick={handleBioLogin}
                   sx={{
                     flex: 1,
-                    background: 'linear-gradient(135deg, #00C9A7, #0EA5E9)',
+                    background: 'linear-gradient(135deg, #10B981, #14B8A6)',
                     borderRadius: '12px',
                     py: '10px',
                     color: '#fff',
@@ -403,7 +419,7 @@ export default function Login() {
                 <Button
                   variant="text"
                   onClick={() => { setShowBioEmail(false); setBioEmail(''); }}
-                  sx={{ color: '#4A6080', textTransform: 'none', fontSize: 13 }}
+                  sx={{ color: 'text.secondary', textTransform: 'none', fontSize: 13 }}
                 >
                   Cancel
                 </Button>
@@ -413,11 +429,11 @@ export default function Login() {
 
           {/* Divider */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, my: 2.5 }}>
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#1E2D45' }} />
-            <Typography sx={{ fontSize: 11, color: '#4A6080', whiteSpace: 'nowrap' }}>
+            <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
+            <Typography sx={{ fontSize: 11, color: 'text.secondary', whiteSpace: 'nowrap' }}>
               New to Arthya?
             </Typography>
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: '#1E2D45' }} />
+            <Box sx={{ flex: 1, height: '1px', bgcolor: 'divider' }} />
           </Box>
 
           {/* Register link */}
@@ -425,7 +441,7 @@ export default function Login() {
             <Link
               component={RouterLink}
               to="/register"
-              sx={{ color: '#00C9A7', fontWeight: 500, fontSize: 14, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+              sx={{ color: 'primary.main', fontWeight: 500, fontSize: 14, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
             >
               Create your free account →
             </Link>

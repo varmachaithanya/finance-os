@@ -71,8 +71,8 @@ export default function Predictions() {
                         size="small"
                         sx={{
                           fontSize: 10, fontWeight: 600,
-                          background: p.confidence_score > 80 ? '#00C9A720' : p.confidence_score > 60 ? '#F59E0B20' : '#E24B4A20',
-                          color: p.confidence_score > 80 ? '#00C9A7' : p.confidence_score > 60 ? '#F59E0B' : '#E24B4A',
+                          background: p.confidence_score > 80 ? '#10B98120' : p.confidence_score > 60 ? '#F59E0B20' : '#EF444420',
+                          color: p.confidence_score > 80 ? '#10B981' : p.confidence_score > 60 ? '#F59E0B' : '#EF4444',
                         }}
                       />
                     </Box>

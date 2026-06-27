@@ -20,7 +20,7 @@ export const BANK_LOGOS: Record<string, { color: string; short: string }> = {
   'AU Bank':                { color: '#E91E63', short: 'AU' },
   'American Express':       { color: '#007BC1', short: 'AMEX' },
   'HSBC':                   { color: '#DB0011', short: 'HSBC' },
-  'Other':                  { color: '#4A6080', short: 'BNK' },
+  'Other':                  { color: '#94A3B8', short: 'BNK' },
 };
 
 export const CARD_NETWORK_LOGOS: Record<string, { color: string; bg: string; symbol: string }> = {
@@ -61,7 +61,7 @@ export const SUBSCRIPTION_LOGOS: Record<string, { icon: string; color: string; b
   'Microsoft 365':      { icon: '\u{1F4BC}', color: '#D83B01', bg: '#D83B0120' },
   'ChatGPT Plus':       { icon: '\u{1F916}', color: '#00A67E', bg: '#00A67E20' },
   'Canva Pro':          { icon: '\u{1F3A8}', color: '#00C4CC', bg: '#00C4CC20' },
-  'Other':              { icon: '\u{1F4CB}', color: '#4A6080', bg: '#4A608020' },
+  'Other':              { icon: '\u{1F4CB}', color: '#94A3B8', bg: '#94A3B820' },
 };
 
 export const BankLogo = ({ bankName }: { bankName: string }) => {

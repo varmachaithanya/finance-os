@@ -91,8 +91,8 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
         <AreaChart data={data}>
           <defs>
             <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#00C9A7" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#00C9A7" stopOpacity={0}/>
+              <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider}/>
@@ -103,7 +103,7 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
             tickFormatter={(v) => `\u20B9${(v/1000).toFixed(0)}k`}/>
           <Tooltip content={<CustomTooltip />}/>
           <Area type="monotone" dataKey="expenses"
-            stroke="#00C9A7" strokeWidth={2}
+            stroke="#10B981" strokeWidth={2}
             fill="url(#expenseGrad)" name="Expenses"/>
         </AreaChart>
       </ResponsiveContainer>
