@@ -86,9 +86,10 @@ export default function BottomNav() {
           borderRadius: '20px 20px 0 0',
           display: { xs: 'flex', md: 'none' },
           alignItems: 'center',
-          justifyContent: 'space-around',
+          justifyContent: 'space-evenly',
           zIndex: 1200,
           pb: 'env(safe-area-inset-bottom)',
+          px: 1,
         }}
       >
         {NAV_ITEMS.map((item) => {
@@ -108,12 +109,14 @@ export default function BottomNav() {
                 justifyContent: 'center',
                 gap: 0.25,
                 py: 0.5,
-                px: 2,
+                px: 1,
                 cursor: 'pointer',
                 position: 'relative',
                 borderRadius: '12px',
                 background: isActive ? `${theme.palette.primary.main}20` : 'transparent',
-                minWidth: 56,
+                minWidth: 48,
+                flex: 1,
+                maxWidth: 72,
                 transition: 'all 0.2s',
               }}
             >

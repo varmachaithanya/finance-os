@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Fab, Badge, Box, keyframes } from '@mui/material';
+import { Fab, Badge, Box, keyframes, useMediaQuery, useTheme } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
 import { useChatStore } from '@/app/chatStore';
@@ -12,6 +12,8 @@ const pulse = keyframes`
 `;
 
 const FloatChatFab: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { isOpen, toggleOpen, hasOpened, recommendationCount, setRecommendationCount } = useChatStore();
   const [showPulse, setShowPulse] = useState(!hasOpened);
 
@@ -29,7 +31,7 @@ const FloatChatFab: React.FC = () => {
   }, [hasOpened]);
 
   return (
-    <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1300 }}>
+    <Box sx={{ position: 'fixed', bottom: isMobile ? 88 : 24, right: 24, zIndex: 1300, pb: 'env(safe-area-inset-bottom)' }}>
       <Badge
         badgeContent={recommendationCount}
         color="error"
