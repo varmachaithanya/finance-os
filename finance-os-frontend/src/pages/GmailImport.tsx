@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  Box, Paper, Typography, Button, Chip, Checkbox, Grid, Avatar, MenuItem, TextField,
-  Snackbar, Alert, CircularProgress, Skeleton, Select, FormControl, useTheme,
+  Box, Paper, Typography, Button, Chip, Checkbox, Grid, Avatar, MenuItem,
+  Snackbar, Alert, CircularProgress, Skeleton, Select, useTheme,
 } from '@mui/material';
 import PageHeader from '@/components/common/PageHeader';
 import { gmailService, GmailTransaction, FetchTransactionsResponse } from '@/services/gmailService';
@@ -208,49 +208,39 @@ export default function GmailImport() {
             Connected as {user?.email || 'your Google account'}
           </Typography>
 
-          {/* Fetch mode toggle */}
-          <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+          {/* Day range selector */}
+          <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+            <Typography fontSize={12} color="#4A6080">Period:</Typography>
+            {[7, 15, 30, 60, 90].map(d => (
+              <Chip
+                key={d}
+                label={`${d} days`}
+                size="small"
+                onClick={() => { setDays(d); setFetchMode('all'); }}
+                sx={{
+                  background: days === d && fetchMode === 'all' ? '#00C9A720' : 'transparent',
+                  color: days === d && fetchMode === 'all' ? '#00C9A7' : '#4A6080',
+                  border: '1px solid',
+                  borderColor: days === d && fetchMode === 'all' ? '#00C9A730' : '#1E2D45',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                }}
+              />
+            ))}
             <Chip
-              label="🔄 Fetch New Only"
+              label="🔄 New only"
+              size="small"
               onClick={() => setFetchMode('incremental')}
-              variant={fetchMode === 'incremental' ? 'filled' : 'outlined'}
               sx={{
-                background: fetchMode === 'incremental' ? '#00C9A720' : 'transparent',
-                color: fetchMode === 'incremental' ? '#00C9A7' : '#4A6080',
+                background: fetchMode === 'incremental' ? '#0EA5E920' : 'transparent',
+                color: fetchMode === 'incremental' ? '#0EA5E9' : '#4A6080',
                 border: '1px solid',
-                borderColor: fetchMode === 'incremental' ? '#00C9A7' : '#1E2D45',
+                borderColor: fetchMode === 'incremental' ? '#0EA5E930' : '#1E2D45',
                 cursor: 'pointer',
-                '&:hover': { opacity: 0.8 },
-              }}
-            />
-            <Chip
-              label="📥 Fetch All"
-              onClick={() => setFetchMode('all')}
-              variant={fetchMode === 'all' ? 'filled' : 'outlined'}
-              sx={{
-                background: fetchMode === 'all' ? '#0EA5E920' : 'transparent',
-                color: fetchMode === 'all' ? '#0EA5E9' : '#4A6080',
-                border: '1px solid',
-                borderColor: fetchMode === 'all' ? '#0EA5E9' : '#1E2D45',
-                cursor: 'pointer',
-                '&:hover': { opacity: 0.8 },
+                fontSize: '11px',
               }}
             />
           </Box>
-
-          {fetchMode === 'all' && (
-            <FormControl fullWidth size="small" sx={{ mb: 3 }}>
-              <Select
-                value={days}
-                onChange={(e) => setDays(e.target.value as number)}
-                sx={{ background: theme.palette.action.hover, color: theme.palette.text.primary, borderRadius: '10px' }}
-              >
-                {[7, 15, 30, 60].map(d => (
-                  <MenuItem key={d} value={d}>Last {d} days</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
 
           <Button
             variant="contained"
@@ -280,44 +270,90 @@ export default function GmailImport() {
       {/* Step 3: Review */}
       {fetched && (
         <>
-          {/* Fetch info bar */}
+          {/* Debug info bar */}
           {fetchResult && (
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-              <Typography fontSize={13} color="#4A6080">
-                {fetchResult.is_incremental
-                  ? 'Showing new transactions since last fetch'
-                  : `Showing transactions from last ${fetchResult.days_searched} days`}
-              </Typography>
-              {fetchResult.last_fetch_was && (
-                <Typography fontSize={11} color="#4A6080">
-                  Last fetched: {new Date(fetchResult.last_fetch_was).toLocaleString('en-IN')}
+            <Box sx={{ background: '#0B1120', border: '1px solid #1E2D45', borderRadius: '10px', p: 2, mb: 2, display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+              <Box>
+                <Typography fontSize={11} color="#4A6080">Emails Scanned</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#F0F6FF">{fetchResult.emails_scanned || 0}</Typography>
+              </Box>
+              <Box>
+                <Typography fontSize={11} color="#4A6080">Transactions Found</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#00C9A7">{fetchResult.total || 0}</Typography>
+              </Box>
+              <Box>
+                <Typography fontSize={11} color="#4A6080">Fetch Type</Typography>
+                <Typography fontSize={15} fontWeight={600} color="#0EA5E9">
+                  {fetchResult.is_incremental ? 'New only' : `Last ${days} days`}
                 </Typography>
+              </Box>
+              {fetchResult.last_fetch_was && (
+                <Box>
+                  <Typography fontSize={11} color="#4A6080">Previous Fetch</Typography>
+                  <Typography fontSize={13} fontWeight={500} color="#EF9F27">
+                    {new Date(fetchResult.last_fetch_was).toLocaleString('en-IN')}
+                  </Typography>
+                </Box>
               )}
             </Box>
           )}
 
           {/* Empty state */}
-          {transactions.length === 0 && !fetchMutation.isPending && (
-            <Box sx={{ textAlign: 'center', py: 6, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px' }}>
-              <Typography fontSize={40} mb={2}>✅</Typography>
+          {transactions.length === 0 && !fetchMutation.isPending && fetchResult && (
+            <Box sx={{ textAlign: 'center', py: 5, background: '#111E33', border: '1px solid #1E2D45', borderRadius: '16px', px: 3 }}>
+              <Typography fontSize={36} mb={2}>
+                {fetchResult.emails_scanned > 0 ? '🔍' : '📭'}
+              </Typography>
               <Typography fontSize={16} fontWeight={600} color="#F0F6FF" mb={1}>
-                {fetchResult?.is_incremental ? 'All caught up!' : 'No bank transactions found'}
+                {fetchResult.emails_scanned > 0
+                  ? `Scanned ${fetchResult.emails_scanned} emails but no bank transactions detected`
+                  : 'No bank emails found in this period'
+                }
               </Typography>
-              <Typography fontSize={13} color="#4A6080">
-                {fetchResult?.is_incremental
+              <Typography fontSize={13} color="#4A6080" mb={2}>
+                {fetchResult.is_incremental
                   ? 'No new bank transactions since your last fetch.'
-                  : `No bank transaction emails found in the last ${fetchResult?.days_searched || days} days.`}
+                  : `Searched the last ${fetchResult.days_searched || days} days.`}
               </Typography>
-              {fetchResult?.is_incremental && (
+
+              {/* Troubleshoot tips */}
+              <Box sx={{ background: '#0B1120', border: '1px solid #1E2D45', borderRadius: '12px', p: 2, mt: 1, textAlign: 'left' }}>
+                <Typography fontSize={13} fontWeight={500} color="#EF9F27" mb={1}>
+                  💡 Troubleshooting tips:
+                </Typography>
+                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                  • Make sure your bank sends transaction alerts to this Gmail account
+                </Typography>
+                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                  • Check if bank SMS alerts are enabled — not all banks send email alerts
+                </Typography>
+                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                  • Try increasing the fetch period to 60 days
+                </Typography>
+                <Typography fontSize={12} color="#4A6080" mb={0.5}>
+                  • Check your Gmail inbox manually for emails with subject "debited" or "transaction"
+                </Typography>
+                <Typography fontSize={12} color="#4A6080">
+                  • Some banks only send SMS, not email alerts
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mt: 2, flexWrap: 'wrap' }}>
                 <Chip
-                  label="📥 Fetch All (30 days)"
-                  onClick={() => {
+                  label="Try 60 days"
+                  onClick={() => { setDays(60); setFetchMode('all'); setTimeout(() => fetchMutation.mutate(), 100); }}
+                  sx={{ background: '#0EA5E920', color: '#0EA5E9', border: '1px solid #0EA5E930', cursor: 'pointer' }}
+                />
+                <Chip
+                  label="Reset & Fetch All"
+                  onClick={async () => {
+                    try { await gmailService.resetFetchTime(); } catch {}
                     setFetchMode('all');
                     setTimeout(() => fetchMutation.mutate(), 100);
                   }}
-                  sx={{ mt: 2, background: '#0EA5E920', color: '#0EA5E9', border: '1px solid #0EA5E930', cursor: 'pointer' }}
+                  sx={{ background: '#EF9F2720', color: '#EF9F27', border: '1px solid #EF9F2730', cursor: 'pointer' }}
                 />
-              )}
+              </Box>
             </Box>
           )}
 

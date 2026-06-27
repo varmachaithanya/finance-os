@@ -16,7 +16,7 @@ export interface GmailTransaction {
 export interface FetchTransactionsResponse {
   transactions: GmailTransaction[];
   total: number;
-  total_found: number;
+  emails_scanned: number;
   parsed_ok: number;
   skipped_no_amount: number;
   skipped_invalid: number;
@@ -25,6 +25,7 @@ export interface FetchTransactionsResponse {
   is_incremental: boolean;
   fetched_at: string;
   last_fetch_was: string | null;
+  debug_query?: string;
 }
 
 export interface ImportTransactionsResponse {
@@ -63,6 +64,11 @@ export const gmailService = {
 
   disconnect: async () => {
     const res = await api.delete('/gmail/disconnect');
+    return res.data;
+  },
+
+  resetFetchTime: async () => {
+    const res = await api.post('/gmail/reset-fetch-time');
     return res.data;
   },
 };

@@ -50,7 +50,7 @@ interface ExpenseRow extends Record<string, unknown> {
   amount: number;
   description: string;
   date: string;
-  categoryId: string;
+  category_id: string;
   category?: { id: string; name: string; color?: string; icon?: string };
   payment_method?: string;
 }
@@ -121,11 +121,13 @@ export default function Expenses() {
   const rows: ExpenseRow[] = useMemo(() =>
     (expensesData?.data ?? []).map((e) => {
       const cat = categories.find((c: { id: string }) => c.id === e.category_id);
+      const raw = e as unknown as Record<string, unknown>;
       return {
         ...e,
-        payment_method: (e as unknown as Record<string, unknown>).payment_method as string ?? 'upi',
+        date: raw.expense_date as string,
+        payment_method: (raw.payment_method as string) ?? 'upi',
         category: cat ? { id: cat.id, name: cat.name, color: cat.color, icon: cat.icon } : undefined,
-      };
+      } as unknown as ExpenseRow;
     }), [expensesData, categories]);
 
   const {

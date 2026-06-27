@@ -200,24 +200,36 @@ def is_valid_transaction(amount: float, merchant: str, subject: str, body: str) 
 
 
 def extract_email_body(payload: dict) -> str:
-    """Recursively extract text from Gmail message payload."""
-    mime_type = payload.get('mimeType', '')
-    body_data = payload.get('body', {}).get('data', '')
+    """Extract text from email payload recursively, handling multipart/alternative nesting."""
+    body_text = ""
 
-    if mime_type == 'text/plain' and body_data:
-        return base64.urlsafe_b64decode(body_data).decode('utf-8', errors='ignore')
+    def decode_part(data: str) -> str:
+        try:
+            return base64.urlsafe_b64decode(data + '==').decode('utf-8', errors='ignore')
+        except Exception:
+            return ""
 
-    if mime_type == 'text/html' and body_data:
-        html = base64.urlsafe_b64decode(body_data).decode('utf-8', errors='ignore')
-        return re.sub(r'<[^>]+>', ' ', html)
+    if 'body' in payload:
+        data = payload['body'].get('data', '')
+        if data:
+            body_text += decode_part(data)
 
-    parts = payload.get('parts', [])
-    for part in parts:
-        result = extract_email_body(part)
-        if result:
-            return result
+    if 'parts' in payload:
+        for part in payload['parts']:
+            mime = part.get('mimeType', '')
+            if mime == 'text/plain':
+                data = part.get('body', {}).get('data', '')
+                if data:
+                    body_text += decode_part(data)
+            elif mime == 'text/html' and not body_text:
+                data = part.get('body', {}).get('data', '')
+                if data:
+                    html = decode_part(data)
+                    body_text += re.sub(r'<[^>]+>', ' ', html)
+            elif 'parts' in part:
+                body_text += extract_email_body(part)
 
-    return ''
+    return body_text[:5000]
 
 
 def parse_amount(text_content: str) -> Optional[float]:
@@ -456,8 +468,7 @@ def fetch_transactions(
                 detail="Gmail not connected. Please connect Gmail first."
             )
 
-        # Incremental fetch: only emails after last_fetched_at
-        is_incremental = False
+        # Get last fetch time BEFORE any updates
         token_row = None
         try:
             token_row = db.execute(
@@ -465,23 +476,23 @@ def fetch_transactions(
                      "WHERE user_id = :uid AND is_connected = TRUE"),
                 {"uid": str(current_user.id)}
             ).fetchone()
-            is_incremental = bool(incremental and token_row and token_row.last_fetched_at)
         except Exception:
             logger.info("last_fetched_at column not available, falling back to full fetch")
-        if is_incremental:
-            last_fetch = token_row.last_fetched_at
-            if hasattr(last_fetch, 'timestamp'):
-                after_timestamp = int(last_fetch.timestamp())
-            else:
-                after_timestamp = int(last_fetch.replace(tzinfo=None).timestamp())
-            query_time_filter = f"after:{after_timestamp}"
-        else:
-            query_time_filter = f"newer_than:{days}d"
 
-        # Stricter query: only known Indian bank sender domains + transaction subject keywords
+        # Determine time filter
+        has_last_fetch = bool(token_row and token_row.last_fetched_at)
+        is_incremental = bool(incremental and has_last_fetch)
+        if is_incremental:
+            after_ts = int(token_row.last_fetched_at.timestamp())
+            time_filter = f"after:{after_ts}"
+        else:
+            time_filter = f"newer_than:{days}d"
+
+        # Wider query — catches more banks via subject keywords
         query = (
-            "(from:alerts@hdfcbank.net "
-            "OR from:phishingalerts@hdfcbank.com "
+            "("
+            "from:alerts@hdfcbank.net "
+            "OR from:icici@icicibank.com "
             "OR from:alerts@icicibank.com "
             "OR from:onlinesbi@sbi.co.in "
             "OR from:sbicard@sbicard.com "
@@ -495,15 +506,26 @@ def fetch_transactions(
             "OR from:alerts@federalbank.co.in "
             "OR from:noreply@rblbank.com "
             "OR from:care@paytmbank.com "
-            "OR from:noreply@aupayments.com) "
-            "AND (subject:debited OR subject:credited "
+            "OR from:noreply@aupayments.com "
+            "OR from:alerts@aubank.in "
+            "OR subject:debited "
+            "OR subject:credited "
+            "OR subject:\"txn alert\" "
             "OR subject:\"transaction alert\" "
-            "OR subject:\"a/c\" "
-            "OR subject:\"acct\" "
-            "OR subject:spent OR subject:\"UPI txn\" "
-            "OR subject:NEFT OR subject:IMPS "
-            "OR subject:RTGS) "
-            f"{query_time_filter}"
+            "OR subject:\"a/c debited\" "
+            "OR subject:\"a/c credited\" "
+            "OR subject:\"acct debited\" "
+            "OR subject:\"spent on\" "
+            "OR subject:\"payment of rs\" "
+            "OR subject:\"payment of inr\" "
+            "OR subject:\"upi payment\" "
+            "OR subject:\"neft credit\" "
+            "OR subject:\"neft debit\" "
+            "OR subject:\"imps credit\" "
+            "OR subject:\"imps debit\" "
+            "OR subject:\"rtgs credit\" "
+            ")"
+            f" {time_filter}"
         )
 
         logger.info("Fetching Gmail messages", query=query, days=days, incremental=is_incremental)
@@ -531,8 +553,8 @@ def fetch_transactions(
             if not page_token:
                 break
 
-        total_found = len(all_messages)
-        logger.info("Gmail fetch complete", total_messages_found=total_found)
+        emails_scanned = len(all_messages)
+        logger.info("Gmail fetch complete", emails_scanned=emails_scanned)
 
         # ---- Process each message ----
         transactions = []
@@ -598,19 +620,20 @@ def fetch_transactions(
 
         transactions.sort(key=lambda x: x['date'], reverse=True)
 
-        # Update last_fetched_at
-        try:
-            db.execute(
-                text("UPDATE gmail_tokens SET last_fetched_at = NOW() "
-                     "WHERE user_id = :uid"),
-                {"uid": str(current_user.id)}
-            )
-            db.commit()
-        except Exception:
-            db.rollback()
-            logger.info("last_fetched_at column not available, skipping update")
+        # Only update last_fetched_at if we found results or if this was a manual full fetch
+        if not is_incremental or len(transactions) > 0:
+            try:
+                db.execute(
+                    text("UPDATE gmail_tokens SET last_fetched_at = NOW() "
+                         "WHERE user_id = :uid"),
+                    {"uid": str(current_user.id)}
+                )
+                db.commit()
+            except Exception:
+                db.rollback()
+                logger.info("last_fetched_at column not available, skipping update")
 
-        logger.info("Transaction extraction summary", total_found=total_found,
+        logger.info("Transaction extraction summary", emails_scanned=emails_scanned,
                     parsed_ok=parsed_ok, skipped_no_amount=skipped_no_amount,
                     skipped_invalid=skipped_invalid, skipped_error=skipped_error,
                     total_returned=len(transactions))
@@ -618,7 +641,7 @@ def fetch_transactions(
         return {
             "transactions": transactions,
             "total": len(transactions),
-            "total_found": total_found,
+            "emails_scanned": emails_scanned,
             "parsed_ok": parsed_ok,
             "skipped_no_amount": skipped_no_amount,
             "skipped_invalid": skipped_invalid,
@@ -626,7 +649,8 @@ def fetch_transactions(
             "days_searched": days,
             "is_incremental": is_incremental,
             "fetched_at": datetime.utcnow().isoformat(),
-            "last_fetch_was": str(token_row.last_fetched_at) if token_row and token_row.last_fetched_at else None,
+            "last_fetch_was": str(token_row.last_fetched_at) if has_last_fetch else None,
+            "debug_query": query,
         }
 
     except HTTPException:
@@ -740,6 +764,87 @@ def import_transactions(
         "message": f"Imported {imported} expenses"
                    + (f", {duplicates} duplicates skipped" if duplicates else "")
                    + (f", {failed} failed" if failed else ""),
+    }
+
+
+@router.get("/debug-emails")
+def debug_emails(
+    days: int = 30,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Debug endpoint to see raw Gmail results for troubleshooting."""
+    try:
+        service = get_gmail_service(str(current_user.id), db)
+        if not service:
+            return {"error": "Gmail not connected"}
+
+        query = (
+            "(subject:debited OR subject:credited "
+            "OR subject:transaction OR subject:payment "
+            "OR subject:bank OR subject:account "
+            "OR subject:upi OR subject:neft) "
+            f"newer_than:{days}d"
+        )
+
+        results = service.users().messages().list(
+            userId='me',
+            q=query,
+            maxResults=20
+        ).execute()
+
+        messages = results.get('messages', [])
+        debug_info = []
+
+        for msg in messages[:10]:
+            try:
+                message = service.users().messages().get(
+                    userId='me',
+                    id=msg['id'],
+                    format='metadata',
+                    metadataHeaders=['Subject', 'From', 'Date']
+                ).execute()
+
+                headers = {
+                    h['name']: h['value']
+                    for h in message['payload']['headers']
+                }
+
+                debug_info.append({
+                    'id': msg['id'],
+                    'subject': headers.get('Subject', ''),
+                    'from': headers.get('From', ''),
+                    'date': headers.get('Date', ''),
+                    'snippet': message.get('snippet', ''),
+                })
+            except Exception:
+                continue
+
+        return {
+            "query_used": query,
+            "total_found": len(messages),
+            "sample_emails": debug_info,
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.post("/reset-fetch-time")
+def reset_fetch_time(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Reset last_fetched_at so next fetch gets all emails."""
+    db.execute(
+        text("UPDATE gmail_tokens SET last_fetched_at = NULL "
+             "WHERE user_id = :uid"),
+        {"uid": str(current_user.id)}
+    )
+    db.commit()
+    return {
+        "success": True,
+        "message": "Fetch time reset. Next fetch will get all emails."
     }
 
 
