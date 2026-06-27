@@ -115,5 +115,5 @@ def debt_payoff_plan(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DebtPayoffResponse:
-    service = DebtOptimizerService(db))
+    service = DebtOptimizerService(db)
     return service.generate_plan(str(current_user.id), monthly_budget)
