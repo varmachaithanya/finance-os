@@ -120,7 +120,7 @@ def debt_payoff_plan(
     return service.generate_plan(str(current_user.id), monthly_budget)
 
 
-@router.post("/chat", summary="Ask the WealthWise AI Coach a question")
+@router.post("/chat", summary="Ask the Arthya AI Coach a question")
 def chat(
     req: ChatRequest,
     db: Session = Depends(get_db),

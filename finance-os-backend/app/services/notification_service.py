@@ -192,7 +192,7 @@ def check_credit_card_dues(db: Session):
         user = db.query(User).filter(User.id == user_id).first()
         if user and user.email:
             html = build_due_alert_email(user.full_name, items, "credit_card")
-            send_email(user.email, "\u26a0\ufe0f Credit Card Payment Due \u2014 WealthWise", html)
+            send_email(user.email, "\u26a0\ufe0f Credit Card Payment Due \u2014 Arthya", html)
 
 
 def check_loan_emi_dues(db: Session):
@@ -233,7 +233,7 @@ def check_loan_emi_dues(db: Session):
         user = db.query(User).filter(User.id == user_id).first()
         if user and user.email:
             html = build_due_alert_email(user.full_name, items, "loan")
-            send_email(user.email, "\u26a0\ufe0f Loan EMI Due \u2014 WealthWise", html)
+            send_email(user.email, "\u26a0\ufe0f Loan EMI Due \u2014 Arthya", html)
 
 
 def check_subscription_renewals(db: Session):

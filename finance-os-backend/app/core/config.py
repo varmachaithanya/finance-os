@@ -14,14 +14,14 @@ class Settings(BaseSettings):
 
     WEBAUTHN_RP_ID: str = os.getenv("WEBAUTHN_RP_ID", "localhost")
     WEBAUTHN_ORIGIN: str = os.getenv("WEBAUTHN_ORIGIN", "http://localhost:5173")
-    WEBAUTHN_RP_NAME: str = os.getenv("WEBAUTHN_RP_NAME", "WealthWise")
+    WEBAUTHN_RP_NAME: str = os.getenv("WEBAUTHN_RP_NAME", "Arthya")
 
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     EMAIL_FROM: str = ""
-    EMAIL_FROM_NAME: str = "WealthWise"
+    EMAIL_FROM_NAME: str = "Arthya"
 
     RESEND_API_KEY: str = ""
 
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
     MAIL_FROM: str = ""
-    MAIL_FROM_NAME: str = "WealthWise"
+    MAIL_FROM_NAME: str = "Arthya"
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_PORT: int = 587
     MAIL_STARTTLS: bool = True

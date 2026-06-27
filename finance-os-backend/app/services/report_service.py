@@ -110,7 +110,7 @@ class ReportService:
         styles = getSampleStyleSheet()
         elements = []
 
-        elements.append(Paragraph(f"WealthWise Report - {period.title()}", styles["Title"]))
+        elements.append(Paragraph(f"Arthya Report - {period.title()}", styles["Title"]))
         elements.append(Spacer(1, 12))
         elements.append(
             Paragraph(

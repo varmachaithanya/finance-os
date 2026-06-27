@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.services.financial_context_service import FinancialContextService
 
-SYSTEM_PROMPT = """You are WealthWise AI Coach, a personal finance assistant integrated into the WealthWise personal finance management application.
+SYSTEM_PROMPT = """You are Arthya AI Coach, a personal finance assistant integrated into the Arthya personal finance management application.
 
 RULES:
 1. Use ONLY the financial information provided in the "USER FINANCIAL SUMMARY" section below.

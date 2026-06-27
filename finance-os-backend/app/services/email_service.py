@@ -14,8 +14,9 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 _FOOTER_TEXT = """---
-Best Regards,
+Arthya — Where Wealth Meets Purpose
 
+Best Regards,
 Chaithanya Varma
 \u200b📍 Kompally, Hyderabad, Telangana - 500100"""
 
@@ -23,6 +24,10 @@ _FOOTER_HTML = """<tr><td style="padding-top:32px">
 <hr style="border:none;border-top:1px solid #1E2D45;margin:0 0 24px 0">
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:4px">
+<p style="color:#D4AF37;font-size:13px;margin:0;font-weight:700">Arthya</p>
+<p style="color:#4A6080;font-size:11px;margin:0;font-style:italic">Where Wealth Meets Purpose</p>
+</td></tr>
+<tr><td style="padding-top:16px;text-align:center;padding-bottom:4px">
 <p style="color:#8899AA;font-size:13px;margin:0;font-weight:600">Best Regards,</p>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:4px">
@@ -35,8 +40,8 @@ _FOOTER_HTML = """<tr><td style="padding-top:32px">
 
 def _build_message(recipient: str, subject: str, html: str, text: str,
                    from_addr: str = "", from_name: str = "") -> str:
-    f_addr = from_addr or settings.EMAIL_FROM or settings.SMTP_USER or "noreply@wealthwise.app"
-    f_name = from_name or settings.EMAIL_FROM_NAME or "WealthWise"
+    f_addr = from_addr or settings.EMAIL_FROM or settings.SMTP_USER or "noreply@arthya.app"
+    f_name = from_name or settings.EMAIL_FROM_NAME or "Arthya"
     host = settings.SMTP_HOST or "localhost"
     msg = MIMEMultipart("alternative")
     msg["From"] = formataddr((f_name, f_addr))
@@ -51,8 +56,8 @@ def _build_message(recipient: str, subject: str, html: str, text: str,
 
 
 def _send_via_resend(recipient: str, subject: str, html_body: str, text_body: str) -> None:
-    from_addr = settings.EMAIL_FROM or "noreply@wealthwise.app"
-    from_name = settings.EMAIL_FROM_NAME or "WealthWise"
+    from_addr = settings.EMAIL_FROM or "noreply@arthya.app"
+    from_name = settings.EMAIL_FROM_NAME or "Arthya"
     payload: dict = {
         "from": f"{from_name} <{from_addr}>",
         "to": [recipient],
@@ -94,8 +99,8 @@ def _send_via_smtp(recipient: str, subject: str, html_body: str, text_body: str)
     port = settings.SMTP_PORT
     user = settings.SMTP_USER
     password = settings.SMTP_PASSWORD
-    from_addr = settings.EMAIL_FROM or user or "noreply@wealthwise.app"
-    from_name = settings.EMAIL_FROM_NAME or "WealthWise"
+    from_addr = settings.EMAIL_FROM or user or "noreply@arthya.app"
+    from_name = settings.EMAIL_FROM_NAME or "Arthya"
     text = text_body or _strip_html(html_body)
 
     logger.info(
@@ -158,7 +163,7 @@ def _with_footer(html: str, text: str) -> tuple[str, str]:
 def _welcome_text(full_name: str) -> str:
     return f"""Hi {full_name},
 
-Welcome to WealthWise! Your finance dashboard is ready.
+Welcome to Arthya! Your finance dashboard is ready.
 
 Track expenses, manage subscriptions, monitor credit cards, set budgets, and more — all in one place.
 
@@ -172,7 +177,7 @@ def _welcome_html(full_name: str) -> str:
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:22px;margin:0">Welcome, {full_name}!</h1>
@@ -195,7 +200,7 @@ def _welcome_html(full_name: str) -> str:
 
 def send_welcome_email(recipient: str, full_name: str) -> None:
     html, text = _with_footer(_welcome_html(full_name), _welcome_text(full_name))
-    send_email(recipient, "Welcome to WealthWise!", html, text)
+    send_email(recipient, "Welcome to Arthya!", html, text)
 
 
 # ---------------------------------------------------------------------------
@@ -205,7 +210,7 @@ def send_welcome_email(recipient: str, full_name: str) -> None:
 def _login_notification_text(full_name: str) -> str:
     return f"""Hi {full_name},
 
-A new sign-in was detected on your WealthWise account.
+A new sign-in was detected on your Arthya account.
 
 If this was you, no action is needed. If you didn't sign in, please change your password immediately.
 
@@ -217,13 +222,13 @@ def _login_notification_html(full_name: str) -> str:
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Hi {full_name}!</h1>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:24px">
-<p style="color:#4A6080;font-size:14px;margin:0">A new sign-in was detected on your WealthWise account.</p>
+<p style="color:#4A6080;font-size:14px;margin:0">A new sign-in was detected on your Arthya account.</p>
 </td></tr>
 <tr><td style="background:#0B1120;border:1px solid #1E2D45;border-radius:12px;padding:24px;margin-bottom:24px">
 <p style="color:#F0F6FF;font-size:14px;line-height:1.6;margin:0">If this was you, no action is needed. If you didn't sign in, please change your password immediately.</p>
@@ -237,7 +242,7 @@ def _login_notification_html(full_name: str) -> str:
 
 def send_login_notification(recipient: str, full_name: str) -> None:
     html, text = _with_footer(_login_notification_html(full_name), _login_notification_text(full_name))
-    send_email(recipient, "New sign-in to your WealthWise account", html, text)
+    send_email(recipient, "New sign-in to your Arthya account", html, text)
 
 
 # ---------------------------------------------------------------------------
@@ -261,7 +266,7 @@ def _password_reset_html(full_name: str, token: str) -> str:
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Reset your password</h1>
@@ -287,7 +292,7 @@ def _password_reset_html(full_name: str, token: str) -> str:
 
 def send_password_reset_email(recipient: str, full_name: str, token: str) -> None:
     html, text = _with_footer(_password_reset_html(full_name, token), _password_reset_text(full_name, token))
-    send_email(recipient, "Reset your WealthWise password", html, text)
+    send_email(recipient, "Reset your Arthya password", html, text)
 
 
 # ---------------------------------------------------------------------------
@@ -311,7 +316,7 @@ def _cc_due_html(bank_name: str, card_name: str, minimum_due: str, due_date: str
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Credit Card Due Reminder</h1>
@@ -364,7 +369,7 @@ def _renewal_html(service_name: str, amount: str, renewal_date: str, days_left: 
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Upcoming Subscription Renewal</h1>
@@ -422,7 +427,7 @@ def _budget_alert_html(category_name: str, spent: str, budget_amount: str, pct: 
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:40px">
 <tr><td style="text-align:center;padding-bottom:24px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Budget Alert: {category_name}</h1>
@@ -482,8 +487,8 @@ def build_daily_reminder_email(user_name: str, today: str) -> str:
           <tr>
             <td style="padding:28px 32px 0;text-align:center;">
               <div style="display:inline-flex;align-items:center;gap:10px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;text-align:center;line-height:44px;">W</div>
-                <span style="font-size:18px;font-weight:700;color:#F0F6FF;">WealthWise</span>
+                <div style="width:44px;height:44px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#D4AF37;text-align:center;line-height:44px;">A</div>
+                <span style="font-size:18px;font-weight:700;color:#F0F6FF;">Arthya</span>
               </div>
             </td>
           </tr>
@@ -550,7 +555,7 @@ def build_daily_reminder_email(user_name: str, today: str) -> str:
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #1E2D45;text-align:center;">
               <p style="margin:0;font-size:11px;color:#4A6080;">
-                You are receiving this because you have an account on WealthWise.<br/>
+                You are receiving this because you have an account on Arthya.<br/>
                 <a href="{settings.FRONTEND_URL}/profile" style="color:#4A6080;">Manage notification preferences</a>
               </p>
             </td>
@@ -577,12 +582,12 @@ Name: {full_name}
 Email: {email}
 Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
 
-A new user has signed up for WealthWise."""
+A new user has signed up for Arthya."""
     html = f"""<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#0B1120;font-family:Inter,Arial,sans-serif">
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:32px">
 <tr><td style="text-align:center;padding-bottom:16px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#00C9A7,#0EA5E9);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:#0F172A;display:inline-flex;align-items:center;justify-content:center;color:#D4AF37;font-size:22px;font-weight:800">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">New User Registered</h1>
@@ -599,7 +604,7 @@ A new user has signed up for WealthWise."""
 </td></tr>
 </table>
 </td></tr></table>"""
-    send_email(ADMIN_EMAIL, "New User Registered — WealthWise", html, text)
+    send_email(ADMIN_EMAIL, "New User Registered — Arthya", html, text)
 
 
 def send_account_deletion_notification(email: str, full_name: str) -> None:
@@ -609,12 +614,12 @@ Name: {full_name}
 Email: {email}
 Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}
 
-A user has deleted their WealthWise account."""
+A user has deleted their Arthya account."""
     html = f"""<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:#0B1120;font-family:Inter,Arial,sans-serif">
 <tr><td style="padding:40px 16px">
 <table role="presentation" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#111E33;border:1px solid #1E2D45;border-radius:16px;padding:32px">
 <tr><td style="text-align:center;padding-bottom:16px">
-<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#E24B4A,#EF9F27);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">W</div>
+<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#E24B4A,#EF9F27);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700">A</div>
 </td></tr>
 <tr><td style="text-align:center;padding-bottom:8px">
 <h1 style="color:#F0F6FF;font-size:20px;margin:0">Account Deleted</h1>
@@ -631,7 +636,7 @@ A user has deleted their WealthWise account."""
 </td></tr>
 </table>
 </td></tr></table>"""
-    send_email(ADMIN_EMAIL, "Account Deleted — WealthWise", html, text)
+    send_email(ADMIN_EMAIL, "Account Deleted — Arthya", html, text)
 
 
 def build_due_alert_email(user_name: str, due_items: list, alert_type: str) -> str:
@@ -682,7 +687,7 @@ def build_due_alert_email(user_name: str, due_items: list, alert_type: str) -> s
           </tr>
           <tr>
             <td style="padding:20px 32px;border-top:1px solid #1E2D45;text-align:center;">
-              <p style="margin:0;font-size:11px;color:#4A6080;">You are receiving this because you have an account on WealthWise.</p>
+              <p style="margin:0;font-size:11px;color:#4A6080;">You are receiving this because you have an account on Arthya.</p>
             </td>
           </tr>
         </table>

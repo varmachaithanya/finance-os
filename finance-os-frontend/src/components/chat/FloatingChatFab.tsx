@@ -38,7 +38,7 @@ const FloatChatFab: React.FC = () => {
       >
         <Fab
           color="primary"
-          aria-label="AI Coach"
+          aria-label="Arthya Coach"
           onClick={toggleOpen}
           sx={{
             width: 56,

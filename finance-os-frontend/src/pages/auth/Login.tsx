@@ -176,7 +176,7 @@ export default function Login() {
             mb: 0.5,
           }}
         >
-          WealthWise
+          Arthya
         </Typography>
 
         {/* Tagline */}
@@ -407,7 +407,7 @@ export default function Login() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, my: 2.5 }}>
             <Box sx={{ flex: 1, height: '1px', backgroundColor: '#1E2D45' }} />
             <Typography sx={{ fontSize: 11, color: '#4A6080', whiteSpace: 'nowrap' }}>
-              New to WealthWise?
+              New to Arthya?
             </Typography>
             <Box sx={{ flex: 1, height: '1px', backgroundColor: '#1E2D45' }} />
           </Box>

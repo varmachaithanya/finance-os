@@ -111,10 +111,11 @@ const ChatPanel: React.FC = () => {
         </Avatar>
         <Box sx={{ flex: 1 }}>
           <Typography variant="subtitle1" fontWeight={700} lineHeight={1.2}>
-            WealthWise AI Coach
+            Arthya AI Coach
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Your Personal Finance Assistant
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box component="span" sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: '#00C9A7', display: 'inline-block' }} />
+            Online
           </Typography>
         </Box>
         <IconButton onClick={handleClose} size="small">
@@ -147,12 +148,12 @@ const ChatPanel: React.FC = () => {
               color: 'text.secondary',
             }}
           >
-            <SmartToyIcon sx={{ fontSize: 48, color: '#00C9A7', opacity: 0.5 }} />
+            <SmartToyIcon sx={{ fontSize: 48, color: '#D4AF37', opacity: 0.7 }} />
             <Typography variant="body2" color="text.secondary" textAlign="center">
-              Ask me anything about your finances!
+              Hello, I'm Arthya Coach.
             </Typography>
-            <Typography variant="caption" color="text.disabled" textAlign="center">
-              Try one of the quick actions below
+            <Typography variant="caption" color="text.disabled" textAlign="center" sx={{ maxWidth: 280 }}>
+              I can help you understand spending, debt, savings, budgets, subscriptions, and financial goals.
             </Typography>
           </Box>
         )}

@@ -45,7 +45,7 @@ const EXPENSE_CATEGORIES = [
 const getBankColor = (bank: string) => BANK_COLORS[bank] || '#4A6080';
 const getBankShort = (bank: string) => BANK_SHORTS[bank] || bank.charAt(0).toUpperCase();
 
-export default function WealthWiseSmartSync() {
+export default function ArthyaSmartSync() {
   const theme = useTheme();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -152,7 +152,7 @@ export default function WealthWiseSmartSync() {
   if (statusLoading) {
     return (
       <Box>
-        <PageHeader title="WealthWise SmartSync" />
+        <PageHeader title="Arthya SmartSync" />
         <Skeleton variant="rounded" height={300} />
       </Box>
     );
@@ -160,7 +160,7 @@ export default function WealthWiseSmartSync() {
 
   return (
     <Box>
-      <PageHeader title="WealthWise SmartSync" icon="📧" />
+      <PageHeader title="Arthya SmartSync" icon="📧" />
 
       {/* Step 1: Connect */}
       {!status?.connected && (

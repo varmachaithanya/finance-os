@@ -75,7 +75,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="WealthWise API",
+    title="Arthya API",
     description="Personal Finance & Expense Tracking Application",
     version="1.0.0",
     lifespan=lifespan,

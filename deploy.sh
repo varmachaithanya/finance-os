@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "================================"
-echo " WealthWise — Deploy to Railway"
+echo " Arthya — Deploy to Railway"
 echo "================================"
 echo ""
 echo "Step 1: Adding all files..."
