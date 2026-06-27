@@ -457,13 +457,17 @@ def fetch_transactions(
             )
 
         # Incremental fetch: only emails after last_fetched_at
-        token_row = db.execute(
-            text("SELECT last_fetched_at FROM gmail_tokens "
-                 "WHERE user_id = :uid AND is_connected = TRUE"),
-            {"uid": str(current_user.id)}
-        ).fetchone()
-
-        is_incremental = bool(incremental and token_row and token_row.last_fetched_at)
+        is_incremental = False
+        token_row = None
+        try:
+            token_row = db.execute(
+                text("SELECT last_fetched_at FROM gmail_tokens "
+                     "WHERE user_id = :uid AND is_connected = TRUE"),
+                {"uid": str(current_user.id)}
+            ).fetchone()
+            is_incremental = bool(incremental and token_row and token_row.last_fetched_at)
+        except Exception:
+            logger.info("last_fetched_at column not available, falling back to full fetch")
         if is_incremental:
             last_fetch = token_row.last_fetched_at
             if hasattr(last_fetch, 'timestamp'):
@@ -595,12 +599,16 @@ def fetch_transactions(
         transactions.sort(key=lambda x: x['date'], reverse=True)
 
         # Update last_fetched_at
-        db.execute(
-            text("UPDATE gmail_tokens SET last_fetched_at = NOW() "
-                 "WHERE user_id = :uid"),
-            {"uid": str(current_user.id)}
-        )
-        db.commit()
+        try:
+            db.execute(
+                text("UPDATE gmail_tokens SET last_fetched_at = NOW() "
+                     "WHERE user_id = :uid"),
+                {"uid": str(current_user.id)}
+            )
+            db.commit()
+        except Exception:
+            db.rollback()
+            logger.info("last_fetched_at column not available, skipping update")
 
         logger.info("Transaction extraction summary", total_found=total_found,
                     parsed_ok=parsed_ok, skipped_no_amount=skipped_no_amount,

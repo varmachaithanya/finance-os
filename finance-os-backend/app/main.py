@@ -36,8 +36,9 @@ async def lifespan(app: FastAPI):
         init_db()
 
         from sqlalchemy import text as sa_text
-        from app.core.database import engine
-        with engine.connect() as conn:
+        from app.api.deps import get_engine
+        db_engine = get_engine()
+        with db_engine.connect() as conn:
             conn.execute(sa_text("""
                 CREATE TABLE IF NOT EXISTS gmail_tokens (
                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -47,18 +48,22 @@ async def lifespan(app: FastAPI):
                     refresh_token TEXT,
                     token_expiry TIMESTAMP,
                     is_connected BOOLEAN DEFAULT TRUE,
-                    last_fetched_at TIMESTAMP,
                     created_at TIMESTAMP DEFAULT NOW(),
                     updated_at TIMESTAMP DEFAULT NOW(),
                     UNIQUE(user_id)
                 )
             """))
-            conn.execute(sa_text("""
-                ALTER TABLE gmail_tokens
-                ADD COLUMN IF NOT EXISTS
-                last_fetched_at TIMESTAMP
-            """))
             conn.commit()
+            try:
+                conn.execute(sa_text("""
+                    ALTER TABLE gmail_tokens
+                    ADD COLUMN last_fetched_at TIMESTAMP
+                """))
+                conn.commit()
+                logger.info("added last_fetched_at column to gmail_tokens")
+            except Exception:
+                conn.rollback()
+                logger.info("last_fetched_at column already exists")
         logger.info("gmail_tokens table ready")
 
         init_scheduler()
