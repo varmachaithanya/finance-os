@@ -19,8 +19,13 @@ const Reports = lazy(() => import('./pages/Reports'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Insights = lazy(() => import('./pages/Insights'));
-const GmailImport = lazy(() => import('./pages/GmailImport'));
+const WealthWiseSmartSync = lazy(() => import('./pages/WealthWiseSmartSync'));
 const GmailSuccess = lazy(() => import('./pages/GmailSuccess'));
+const Predictions = lazy(() => import('./pages/Predictions'));
+const SavingsSuggestions = lazy(() => import('./pages/SavingsSuggestions'));
+const SpendingAlerts = lazy(() => import('./pages/SpendingAlerts'));
+const EMICalculator = lazy(() => import('./pages/EMICalculator'));
+const DebtOptimizer = lazy(() => import('./pages/DebtOptimizer'));
 
 const LazyLoad = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>}>
@@ -64,8 +69,13 @@ const App = () => {
           <Route path="/notifications" element={<LazyLoad><Notifications /></LazyLoad>} />
           <Route path="/profile" element={<LazyLoad><Profile /></LazyLoad>} />
           <Route path="/insights" element={<LazyLoad><Insights /></LazyLoad>} />
-          <Route path="/gmail-import" element={<LazyLoad><GmailImport /></LazyLoad>} />
+           <Route path="/smart-sync" element={<LazyLoad><WealthWiseSmartSync /></LazyLoad>} />
           <Route path="/gmail-success" element={<LazyLoad><GmailSuccess /></LazyLoad>} />
+          <Route path="/predictions" element={<LazyLoad><Predictions /></LazyLoad>} />
+          <Route path="/savings-suggestions" element={<LazyLoad><SavingsSuggestions /></LazyLoad>} />
+          <Route path="/spending-alerts" element={<LazyLoad><SpendingAlerts /></LazyLoad>} />
+          <Route path="/tools/emi-calculator" element={<LazyLoad><EMICalculator /></LazyLoad>} />
+          <Route path="/debt-optimizer" element={<LazyLoad><DebtOptimizer /></LazyLoad>} />
         </Route>
       </Route>
 

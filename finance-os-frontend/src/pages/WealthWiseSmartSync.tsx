@@ -45,7 +45,7 @@ const EXPENSE_CATEGORIES = [
 const getBankColor = (bank: string) => BANK_COLORS[bank] || '#4A6080';
 const getBankShort = (bank: string) => BANK_SHORTS[bank] || bank.charAt(0).toUpperCase();
 
-export default function GmailImport() {
+export default function WealthWiseSmartSync() {
   const theme = useTheme();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
@@ -152,7 +152,7 @@ export default function GmailImport() {
   if (statusLoading) {
     return (
       <Box>
-        <PageHeader title="Gmail Import" />
+        <PageHeader title="WealthWise SmartSync" />
         <Skeleton variant="rounded" height={300} />
       </Box>
     );
@@ -160,7 +160,7 @@ export default function GmailImport() {
 
   return (
     <Box>
-      <PageHeader title="Gmail Import" icon="📧" />
+      <PageHeader title="WealthWise SmartSync" icon="📧" />
 
       {/* Step 1: Connect */}
       {!status?.connected && (

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.staticfiles import StaticFiles
 
-from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn, insights, gmail
+from app.api.v1.routers import auth, categories, expenses, income, credit_cards, debts, subscriptions, budgets, dashboard, reports, notifications, webauthn, insights, gmail, ai
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.core.scheduler import init_scheduler, shutdown_scheduler
@@ -131,4 +131,5 @@ app.include_router(reports.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(webauthn.router, prefix="/api/v1")
 app.include_router(insights.router, prefix="/api/v1")
+app.include_router(ai.router, prefix="/api/v1")
 app.include_router(gmail.router, prefix="/api/v1/gmail", tags=["Gmail"])

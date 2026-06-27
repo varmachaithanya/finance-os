@@ -326,12 +326,12 @@ def gmail_callback(
     if error:
         logger.error(f"OAuth error: {error}")
         return RedirectResponse(
-            url=f"{FRONTEND_URL}/gmail-import?error={error}"
+            url=f"{FRONTEND_URL}/smart-sync?error={error}"
         )
 
     if not code or not state:
         return RedirectResponse(
-            url=f"{FRONTEND_URL}/gmail-import?error=missing_params"
+            url=f"{FRONTEND_URL}/smart-sync?error=missing_params"
         )
 
     import httpx
@@ -356,7 +356,7 @@ def gmail_callback(
         if "error" in token_data:
             logger.error(f"Token exchange error: {token_data}")
             return RedirectResponse(
-                url=f"{FRONTEND_URL}/gmail-import?error=token_exchange_failed"
+                url=f"{FRONTEND_URL}/smart-sync?error=token_exchange_failed"
             )
 
         access_token = token_data.get("access_token")
@@ -421,11 +421,11 @@ def gmail_callback(
         finally:
             db.close()
 
-        return RedirectResponse(url=f"{FRONTEND_URL}/gmail-import?connected=true")
+        return RedirectResponse(url=f"{FRONTEND_URL}/smart-sync?connected=true")
 
     except Exception as e:
         logger.error(f"Gmail callback error: {e}")
-        return RedirectResponse(url=f"{FRONTEND_URL}/gmail-import?error=server_error")
+        return RedirectResponse(url=f"{FRONTEND_URL}/smart-sync?error=server_error")
 
 
 @router.get("/status")

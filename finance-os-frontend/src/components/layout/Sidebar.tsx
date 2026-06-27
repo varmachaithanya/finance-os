@@ -25,6 +25,11 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import PersonIcon from '@mui/icons-material/Person';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import AutoGraphIcon from '@mui/icons-material/AutoGraph';
+import SavingsIcon from '@mui/icons-material/Savings';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import CalculateIcon from '@mui/icons-material/Calculate';
+import TrackChangesIcon from '@mui/icons-material/TrackChanges';
 
 interface NavItem {
   label: string;
@@ -42,7 +47,12 @@ const mainLinks: NavItem[] = [
   { label: 'Subscriptions', path: '/subscriptions', icon: <RepeatIcon /> },
   { label: 'Budgets', path: '/budgets', icon: <AccountBalanceWalletIcon /> },
   { label: 'Reports', path: '/reports', icon: <AssessmentIcon /> },
-  { label: 'Gmail Import', path: '/gmail-import', icon: <MailOutlineIcon /> },
+  { label: 'Smart Sync', path: '/smart-sync', icon: <MailOutlineIcon /> },
+  { label: 'Predictions', path: '/predictions', icon: <AutoGraphIcon /> },
+  { label: 'Saving Tips', path: '/savings-suggestions', icon: <SavingsIcon /> },
+  { label: 'Spending Alerts', path: '/spending-alerts', icon: <WarningAmberIcon /> },
+  { label: 'EMI Calculator', path: '/tools/emi-calculator', icon: <CalculateIcon /> },
+  { label: 'Debt Strategy', path: '/debt-optimizer', icon: <TrackChangesIcon /> },
 ];
 
 const bottomLinks: NavItem[] = [

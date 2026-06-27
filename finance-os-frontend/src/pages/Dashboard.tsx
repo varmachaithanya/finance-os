@@ -12,6 +12,8 @@ import DebtProgressChart from '@/components/charts/DebtProgressChart';
 import WelcomeModal from '@/components/common/WelcomeModal';
 import { useAuthStore } from '@/app/store';
 import { dashboardService } from '@/services/dashboardService';
+import { aiService } from '@/services/aiService';
+import AIFinancialCoach from '@/components/dashboard/AIFinancialCoach';
 import dayjs from 'dayjs';
 
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -49,6 +51,30 @@ export default function Dashboard() {
   const chartsQuery = useQuery({
     queryKey: ['dashboard', 'charts'],
     queryFn: () => dashboardService.getCharts(6),
+  });
+
+  const predictionsQuery = useQuery({
+    queryKey: ['ai', 'predictions'],
+    queryFn: () => aiService.getPredictions(),
+    staleTime: 120000,
+  });
+
+  const savingsQuery = useQuery({
+    queryKey: ['ai', 'savings'],
+    queryFn: () => aiService.getSavingsSuggestions(),
+    staleTime: 120000,
+  });
+
+  const anomaliesQuery = useQuery({
+    queryKey: ['ai', 'anomalies'],
+    queryFn: () => aiService.getAnomalies(),
+    staleTime: 60000,
+  });
+
+  const debtPlanQuery = useQuery({
+    queryKey: ['ai', 'debt-plan', 0],
+    queryFn: () => aiService.getDebtPayoffPlan(),
+    staleTime: 120000,
   });
 
   useEffect(() => {
@@ -126,6 +152,15 @@ export default function Dashboard() {
           </Grid>
         ))}
       </Grid>
+
+      <Box sx={{ mb: 4 }}>
+        <AIFinancialCoach
+          predictionCount={predictionsQuery.data?.predictions.length ?? 0}
+          savingsCount={savingsQuery.data?.suggestions.length ?? 0}
+          anomalyCount={anomaliesQuery.data?.unread_count ?? 0}
+          hasDebtPlan={(debtPlanQuery.data?.snowball.months_to_debt_free ?? 0) > 0}
+        />
+      </Box>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mb: 4 }}>
         <ExpensePieChart data={expensePieData} />

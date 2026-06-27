@@ -6,7 +6,7 @@ export default function GmailSuccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const timer = setTimeout(() => navigate('/gmail-import', { replace: true }), 2000);
+    const timer = setTimeout(() => navigate('/smart-sync', { replace: true }), 2000);
     return () => clearTimeout(timer);
   }, [navigate]);
 

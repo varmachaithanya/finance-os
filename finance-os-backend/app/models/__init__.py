@@ -10,6 +10,8 @@ from app.models.budget import Budget
 from app.models.notification import Notification
 from app.models.webauthn import WebAuthnCredential, WebAuthnChallenge
 from app.models.gmail_token import GmailToken
+from app.models.prediction import SpendingPrediction
+from app.models.anomaly import AnomalyAlert
 
 __all__ = [
     "Base",
@@ -25,4 +27,6 @@ __all__ = [
     "WebAuthnCredential",
     "WebAuthnChallenge",
     "GmailToken",
+    "SpendingPrediction",
+    "AnomalyAlert",
 ]
